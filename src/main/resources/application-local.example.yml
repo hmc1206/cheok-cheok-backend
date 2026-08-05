@@ -11,4 +11,8 @@ spring:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:update}
 
-# 개인 API 키는 이 파일을 application-local.yml로 복사한 뒤 추가하세요.
+app:
+  auth:
+    secure-cookie: ${SECURE_COOKIE:false}
+
+# GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, JWT_SECRET은 환경 변수로 입력하세요.
