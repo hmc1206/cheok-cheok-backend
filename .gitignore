@@ -1,4 +1,6 @@
 HELP.md
+.DS_Store
+Thumbs.db
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -35,3 +37,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Local configuration ###
+src/main/resources/application-local.yml
