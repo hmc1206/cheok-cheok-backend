@@ -24,15 +24,32 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public AccessTokenResponse refresh(
-            @CookieValue(name = OAuth2LoginSuccessHandler.REFRESH_COOKIE, required = false) String refreshToken
+            @CookieValue(
+                    name = OAuth2LoginSuccessHandler.REFRESH_COOKIE,
+                    required = false
+            ) String refreshToken
     ) {
+        System.out.println("🔥 /api/auth/refresh 호출됨");
+        System.out.println("🔥 refreshToken = " + refreshToken);
+
         if (refreshToken == null || refreshToken.isBlank()) {
+            System.out.println("🔥 refreshToken이 없음");
             throw new ApiException(ErrorCode.UNAUTHORIZED);
         }
+
         String userId = tokenService.requireRefreshSubject(refreshToken);
+
+        System.out.println("🔥 Refresh Token userId = " + userId);
+
         if (!userRepository.existsById(userId)) {
+            System.out.println("🔥 해당 userId의 회원이 없음: " + userId);
             throw new ApiException(ErrorCode.UNAUTHORIZED);
         }
-        return new AccessTokenResponse(tokenService.createAccessToken(userId));
+
+        System.out.println("🔥 Refresh 성공");
+
+        return new AccessTokenResponse(
+                tokenService.createAccessToken(userId)
+        );
     }
 }

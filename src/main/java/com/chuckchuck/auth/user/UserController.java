@@ -12,6 +12,7 @@ import com.chuckchuck.common.exception.ErrorCode;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
+
     private final AppUserRepository userRepository;
 
     public UserController(AppUserRepository userRepository) {
@@ -20,11 +21,14 @@ public class UserController {
 
     @GetMapping("/me")
     public UserResponse me(Principal principal) {
+
         if (principal == null) {
             throw new ApiException(ErrorCode.UNAUTHORIZED);
         }
+
         AppUser user = userRepository.findById(principal.getName())
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED));
+
         return UserResponse.from(user);
     }
 }

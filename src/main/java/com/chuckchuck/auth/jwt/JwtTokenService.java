@@ -23,6 +23,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
@@ -74,8 +75,22 @@ public class JwtTokenService {
 
     public String requireRefreshSubject(String token) {
         try {
-            return refreshTokenDecoder.decode(token).getSubject();
+            Jwt jwt = refreshTokenDecoder.decode(token);
+
+            System.out.println("🔥 Refresh Token 검증 성공");
+            System.out.println("🔥 subject = " + jwt.getSubject());
+            System.out.println("🔥 expiresAt = " + jwt.getExpiresAt());
+            System.out.println("🔥 type = " + jwt.getClaimAsString(TOKEN_TYPE));
+
+            return jwt.getSubject();
+
         } catch (JwtException | IllegalArgumentException exception) {
+            System.out.println("🔥🔥🔥 Refresh Token 검증 실패");
+            System.out.println("🔥 예외 = " + exception.getClass().getName());
+            System.out.println("🔥 원인 = " + exception.getMessage());
+
+            exception.printStackTrace();
+
             throw new ApiException(ErrorCode.UNAUTHORIZED);
         }
     }
@@ -100,16 +115,21 @@ public class JwtTokenService {
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(secretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
+
+        // 💡 [수정 사항] 생성 시점 시간 오차(Clock Skew)로 인한 401 차단을 막기 위해 기본 검증기에 60초의 유연성을 부여합니다.
+        JwtTimestampValidator timestampValidator = new JwtTimestampValidator(Duration.ofSeconds(60));
+
         OAuth2TokenValidator<Jwt> typeValidator = jwt -> requiredType.equals(jwt.getClaimAsString(TOKEN_TYPE))
                 ? OAuth2TokenValidatorResult.success()
                 : OAuth2TokenValidatorResult.failure(new OAuth2Error(
-                        "invalid_token",
-                        "Unexpected token type",
-                        null
-                ));
-        // Access와 Refresh 서명을 같게 쓰더라도 type 검증으로 서로 대신 사용할 수 없게 한다.
+                "invalid_token",
+                "Unexpected token type",
+                null
+        ));
+
+        // 💡 시간 검증기(timestampValidator)를 명시적으로 결합해 줍니다.
         decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
-                JwtValidators.createDefault(),
+                timestampValidator,
                 typeValidator
         ));
         return decoder;
