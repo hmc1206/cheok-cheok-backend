@@ -3,6 +3,8 @@ spring:
     name: cheok-cheok-backend
   profiles:
     default: local
+  jpa:
+    open-in-view: false
 
 server:
   port: ${SERVER_PORT:8080}

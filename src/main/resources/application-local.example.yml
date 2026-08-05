@@ -1,7 +1,14 @@
 spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/chuckchuck}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
 
 # 개인 API 키는 이 파일을 application-local.yml로 복사한 뒤 추가하세요.
