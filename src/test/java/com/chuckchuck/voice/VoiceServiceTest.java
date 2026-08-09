@@ -27,6 +27,7 @@ class VoiceServiceTest {
     private IntentClassifier classifier;
     private IntentRouter router;
     private IntentHandler handler;
+    private SpeechTranscriber speechTranscriber;
     private VoiceService service;
 
     @BeforeEach
@@ -35,7 +36,8 @@ class VoiceServiceTest {
         classifier = mock(IntentClassifier.class);
         router = mock(IntentRouter.class);
         handler = mock(IntentHandler.class);
-        service = new VoiceService(sessionService, classifier, router);
+        speechTranscriber = mock(SpeechTranscriber.class);
+        service = new VoiceService(sessionService, classifier, router, speechTranscriber);
     }
 
     @Test
@@ -85,10 +87,22 @@ class VoiceServiceTest {
     }
 
     @Test
-    void returnsExternalApiErrorUntilServerSttIsConnected() {
-        assertThatThrownBy(() -> service.process(new VoiceRequest("u123", null, "audio")))
-                .isInstanceOfSatisfying(ApiException.class,
-                        exception -> assertThat(exception.errorCode()).isEqualTo(ErrorCode.EXTERNAL_API_FAIL));
+    void transcribesAudioBeforeClassifyingIntent() {
+        VoiceRequest request = new VoiceRequest("u123", null, "YXVkaW8=");
+        VoiceResponse response = new VoiceResponse(
+                Intent.YOUTUBE_PLAY, "DONE", Map.of("query", "미스트롯"),
+                "유튜브를 열어드릴게요.", "APP_LAUNCH", Map.of()
+        );
+
+        when(speechTranscriber.transcribe(request.audio())).thenReturn("미스트롯 영상 틀어줘");
+        when(sessionService.find("u123")).thenReturn(Optional.empty());
+        when(classifier.classify("미스트롯 영상 틀어줘")).thenReturn(Intent.YOUTUBE_PLAY);
+        when(router.route(Intent.YOUTUBE_PLAY)).thenReturn(handler);
+        when(handler.handle(any(), eq("미스트롯 영상 틀어줘"))).thenReturn(response);
+
+        assertThat(service.process(request)).isEqualTo(response);
+        verify(speechTranscriber).transcribe(request.audio());
+        verify(sessionService).clear("u123");
     }
 
 }

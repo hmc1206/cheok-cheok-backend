@@ -7,7 +7,9 @@ public enum ErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.", "로그인한 뒤 다시 이용해 주세요."),
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 정보를 찾을 수 없습니다.", "요청하신 정보를 찾지 못했어요."),
     SESSION_EXPIRED(HttpStatus.CONFLICT, "세션이 만료되었습니다.", "죄송해요, 다시 한번 말씀해주시겠어요?"),
+    SESSION_INTERRUPTED(HttpStatus.CONFLICT, "진행 중인 대화가 중단되었습니다.", "하던 일을 멈추고 새로 시작할까요?"),
     INTENT_NOT_FOUND(HttpStatus.UNPROCESSABLE_ENTITY, "요청 의도를 파악하지 못했습니다.", "죄송해요. 하고 싶은 일을 다시 말씀해 주세요."),
+    STT_EMPTY_INPUT(HttpStatus.UNPROCESSABLE_ENTITY, "음성에서 말소리를 찾지 못했습니다.", "잘 못 들었어요. 다시 한번 말씀해 주세요."),
     EXTERNAL_API_FAIL(HttpStatus.BAD_GATEWAY, "외부 서비스 연결에 실패했습니다.", "지금은 연결이 원활하지 않아요. 잠시 후 다시 해 주세요."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.", "죄송해요. 잠시 후 다시 해 주세요.");
 
