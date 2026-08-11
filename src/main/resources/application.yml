@@ -1,4 +1,7 @@
 spring:
+  config:
+    # 로컬 비밀값은 Git에서 제외한 프로젝트 루트의 .env에서 읽는다.
+    import: optional:file:.env[.properties]
   application:
     name: cheok-cheok-backend
   profiles:

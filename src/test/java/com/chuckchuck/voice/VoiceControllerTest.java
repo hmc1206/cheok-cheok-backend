@@ -44,7 +44,7 @@ class VoiceControllerTest {
                 null
         ));
 
-        mockMvc.perform(post("/api/voice/process")
+        mockMvc.perform(post("/voice/process")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"userId":"u123","text":"도와줘"}
@@ -62,12 +62,13 @@ class VoiceControllerTest {
     void returnsCommonErrorEnvelope() throws Exception {
         when(voiceService.process(any())).thenThrow(new ApiException(ErrorCode.INVALID_REQUEST));
 
-        mockMvc.perform(post("/api/voice/process")
+        mockMvc.perform(post("/voice/process")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode").value("INVALID_REQUEST"))
-                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.error.message").isString())
                 .andExpect(jsonPath("$.ttsText").isString());
     }
 }

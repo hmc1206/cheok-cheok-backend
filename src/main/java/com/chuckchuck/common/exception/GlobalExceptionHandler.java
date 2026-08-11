@@ -15,7 +15,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleApiException(ApiException exception) {
         ErrorCode errorCode = exception.errorCode();
         return ResponseEntity.status(errorCode.status())
-                .body(new ErrorResponse(errorCode.name(), exception.getMessage(), exception.ttsText()));
+                .body(ErrorResponse.from(errorCode, exception.getMessage(), exception.ttsText()));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -31,6 +31,6 @@ public class GlobalExceptionHandler {
 
     private ResponseEntity<ErrorResponse> response(ErrorCode errorCode) {
         return ResponseEntity.status(errorCode.status())
-                .body(new ErrorResponse(errorCode.name(), errorCode.message(), errorCode.ttsText()));
+                .body(ErrorResponse.from(errorCode, errorCode.message(), errorCode.ttsText()));
     }
 }

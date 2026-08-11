@@ -14,15 +14,18 @@ public class VoiceService {
     private final SessionService sessionService;
     private final IntentClassifier intentClassifier;
     private final IntentRouter intentRouter;
+    private final SpeechTranscriber speechTranscriber;
 
     public VoiceService(
             SessionService sessionService,
             IntentClassifier intentClassifier,
-            IntentRouter intentRouter
+            IntentRouter intentRouter,
+            SpeechTranscriber speechTranscriber
     ) {
         this.sessionService = sessionService;
         this.intentClassifier = intentClassifier;
         this.intentRouter = intentRouter;
+        this.speechTranscriber = speechTranscriber;
     }
 
     public VoiceResponse process(VoiceRequest request) {
@@ -62,20 +65,17 @@ public class VoiceService {
         if (!request.hasText() && !request.hasAudio()) {
             throw new ApiException(
                     ErrorCode.INVALID_REQUEST,
-                    "text와 audioBase64 중 하나는 반드시 입력해야 합니다.",
+                    "text와 audio 중 하나는 반드시 입력해야 합니다.",
                     "말씀하실 내용을 다시 입력해 주세요."
             );
         }
     }
 
     private String resolveText(VoiceRequest request) {
-        if (request.hasText()) {
-            return request.text().trim();
+        // 음성 원본이 있으면 프론트의 임의 STT 결과 대신 서버 STT를 기준으로 대화를 진행한다.
+        if (request.hasAudio()) {
+            return speechTranscriber.transcribe(request.audio());
         }
-        throw new ApiException(
-                ErrorCode.EXTERNAL_API_FAIL,
-                "음성을 텍스트로 변환하지 못했습니다.",
-                "지금은 음성을 글자로 바꾸지 못했어요. 잠시 후 다시 말씀해 주세요."
-        );
+        return request.text().trim();
     }
 }
