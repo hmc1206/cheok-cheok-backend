@@ -11,7 +11,13 @@ public enum ErrorCode {
     INTENT_NOT_FOUND(HttpStatus.UNPROCESSABLE_ENTITY, "요청 의도를 파악하지 못했습니다.", "죄송해요. 하고 싶은 일을 다시 말씀해 주세요."),
     STT_EMPTY_INPUT(HttpStatus.UNPROCESSABLE_ENTITY, "음성에서 말소리를 찾지 못했습니다.", "잘 못 들었어요. 다시 한번 말씀해 주세요."),
     EXTERNAL_API_FAIL(HttpStatus.BAD_GATEWAY, "외부 서비스 연결에 실패했습니다.", "지금은 연결이 원활하지 않아요. 잠시 후 다시 해 주세요."),
-    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.", "죄송해요. 잠시 후 다시 해 주세요.");
+    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.", "죄송해요. 잠시 후 다시 해 주세요."),
+    APP_NOT_INSTALLED(HttpStatus.NOT_FOUND, "대상 앱이 설치되어 있지 않습니다.", "앱이 없으면 웹으로 열어드릴게요."),
+    APP_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "앱 권한이 거부되었습니다.", "권한을 허용해야 이용할 수 있어요."),
+    UNSAFE_APP_BLOCKED(HttpStatus.FORBIDDEN, "허용되지 않은 앱 연결입니다.", "안전을 위해 연결을 막았어요."),
+    GEOCODE_NOT_FOUND(HttpStatus.NOT_FOUND, "장소를 찾을 수 없습니다.", "장소를 다시 한번 말씀해 주시겠어요?"),
+    GEOCODE_API_FAIL(HttpStatus.BAD_GATEWAY, "지도 서비스 연결에 실패했습니다.", "지도 연결이 원활하지 않아요. 잠시 후 다시 해 주세요."),
+    MAX_RETRY_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "재질문 횟수를 초과했습니다.", "화면에서 직접 선택해 주시겠어요?");
 
     private final HttpStatus status;
     private final String message;
