@@ -44,7 +44,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/", "/error", "/oauth2/**", "/login/**","/api/auth/refresh").permitAll()
+                        .requestMatchers("/", "/error", "/oauth2/**", "/login/**","/api/auth/refresh", "/api/v1/routes/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
