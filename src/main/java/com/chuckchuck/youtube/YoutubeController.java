@@ -19,6 +19,13 @@ public class YoutubeController {
         this.youtubeService = youtubeService;
     }
 
+    @PostMapping("/play")
+    public YoutubePlayResponse play(
+            @RequestBody YoutubePlayRequest request
+    ) {
+        return youtubeService.play(request.query());
+    }
+
     @GetMapping("/link")
     public YoutubeLinkApiResponse link(
             @RequestParam(required = false) String keyword
