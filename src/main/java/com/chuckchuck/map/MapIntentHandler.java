@@ -26,10 +26,10 @@ public class MapIntentHandler implements IntentHandler {
             "병원", "서울특별시 강남구 건강로 30"
     );
 
-    private final MapApiClient mapApiClient;
+    private final NaverMapUrlService naverMapUrlService;
 
-    public MapIntentHandler(MapApiClient mapApiClient) {
-        this.mapApiClient = mapApiClient;
+    public MapIntentHandler(NaverMapUrlService naverMapUrlService) {
+        this.naverMapUrlService = naverMapUrlService;
     }
 
     @Override
@@ -112,26 +112,41 @@ public class MapIntentHandler implements IntentHandler {
     }
 
     private VoiceResponse complete(Map<String, Object> slots) {
-        return mapApiClient.findRoute(
-                        String.valueOf(slots.get("origin")),
-                        String.valueOf(slots.get("destination"))
-                )
-                .map(route -> new VoiceResponse(
+        try {
+            MapRouteController.NaverLinkResponse response = naverMapUrlService.generateRouteUrls(
+                    String.valueOf(slots.get("origin")),
+                    String.valueOf(slots.get("destination"))
+            );
+
+            if (response != null && response.getStatusCode() == 200 && response.getData() != null) {
+                MapRouteController.NaverLinkData apiData = response.getData();
+
+                RouteResult routeResult = new RouteResult(
+                        apiData.getNaverMapAppUrl(),
+                        apiData.getNaverMapWebUrl()
+                );
+
+                return new VoiceResponse(
                         Intent.MAP_ROUTE,
                         "DONE",
                         slots,
-                        "약 " + route.durationMinutes() + "분 걸려요. 화면의 순서대로 이동해 주세요.",
+                        "네이버 대중교통 길찾기 링크가 생성되었습니다. 화면의 링크를 눌러 확인해 주세요.",
                         "MAP_RESULT",
-                        route
-                ))
-                .orElseGet(() -> new VoiceResponse(
-                        Intent.MAP_ROUTE,
-                        "DONE",
-                        slots,
-                        "가는 길을 찾지 못했어요. 출발지와 도착지를 다시 말씀해 주세요.",
-                        "MAP_NOT_FOUND",
-                        null
-                ));
+                        routeResult
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("인텐트 핸들러 예외 발생: " + e.getMessage());
+        }
+
+        return new VoiceResponse(
+                Intent.MAP_ROUTE,
+                "DONE",
+                slots,
+                "네이버 길찾기 링크를 생성하는 데 실패했어요. 잠시 후 다시 시도해 주세요.",
+                "MAP_NOT_FOUND",
+                null
+        );
     }
 
     private VoiceResponse input(Map<String, Object> slots, String ttsText) {

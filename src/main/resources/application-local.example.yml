@@ -15,4 +15,15 @@ app:
   auth:
     secure-cookie: ${SECURE_COOKIE:false}
 
+youtube:
+  api-key: ${YOUTUBE_API_KEY}
+
+naver:
+  maps:
+    client-id: ${NAVER_CLIENT_ID}
+    client-secret: ${NAVER_CLIENT_SECRET}
+  search:
+    client-id: ${NAVER_SEARCH_CLIENT_ID}
+    client-secret: ${NAVER_SEARCH_CLIENT_SECRET}
+
 # GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, JWT_SECRET은 환경 변수로 입력하세요.

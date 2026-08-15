@@ -33,8 +33,8 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(errorCode.status().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        objectMapper.writeValue(response.getOutputStream(), new ErrorResponse(
-                errorCode.name(),
+        objectMapper.writeValue(response.getOutputStream(), ErrorResponse.from(
+                errorCode,
                 errorCode.message(),
                 errorCode.ttsText()
         ));

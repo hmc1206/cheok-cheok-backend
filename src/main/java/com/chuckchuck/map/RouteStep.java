@@ -5,26 +5,15 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record RouteStep(
         String type,
-        String desc,
-        int durationMinutes,
-        String boardingStop,
-        String line,
-        String boardingStation
+        String url
 ) {
-    public static RouteStep walk(String desc, int durationMinutes) {
-        return new RouteStep("WALK", desc, durationMinutes, null, null, null);
+    // 프론트엔드 응답 포맷이나 내부 변환 로직에서 App URL과 Web URL을 분리해 담아줄 수 있는 팩토리 메서드 예시입니다.
+    public static RouteStep appUrl(String url) {
+        return new RouteStep("APP_URL", url);
     }
 
-    public static RouteStep bus(String desc, int durationMinutes, String boardingStop) {
-        return new RouteStep("BUS", desc, durationMinutes, boardingStop, null, null);
-    }
-
-    public static RouteStep subway(
-            String desc,
-            int durationMinutes,
-            String line,
-            String boardingStation
-    ) {
-        return new RouteStep("SUBWAY", desc, durationMinutes, null, line, boardingStation);
+    public static RouteStep webUrl(String url) {
+        return new RouteStep("WEB_URL", url);
     }
 }
+        
