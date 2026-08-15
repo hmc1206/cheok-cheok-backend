@@ -26,7 +26,7 @@ public class YoutubeLinkBuilder {
     }
 
     private String encode(String value){
-        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+","%2G");
+        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+","%20");
     }
 
     public record YoutubeLinks(String appUrl, String webUrl){
