@@ -29,7 +29,7 @@ Windows에서는 `./gradlew` 대신 `gradlew.bat`을 사용할 수 있습니다.
 ## 패키지 규칙
 
 패키지 루트는 `com.chuckchuck`입니다. 기능을 구현할 때 `auth`, `voice`,
-`session`, `train`, `youtube`, `map`, `kiosk` 하위에 도메인별 코드를 둡니다.
+`session`, `youtube`, `map`, `kiosk`, `weather` 하위에 도메인별 코드를 둡니다.
 사용하지 않는 빈 패키지는 미리 만들지 않습니다.
 
 모든 음성 기능의 진입점은 `POST /api/voice/process`이며, 기존 공통 응답의

@@ -1,5 +1,8 @@
 package com.chuckchuck.voice;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 
 import com.chuckchuck.common.exception.ApiException;
@@ -39,6 +42,7 @@ public class VoiceService {
                         "NEW",
                         null
                 ));
+        session = withWeatherCoordinates(session, request);
 
         VoiceResponse response = intentRouter.route(session.intent()).handle(session, userText);
         if (response.intent() != session.intent()) {
@@ -69,6 +73,15 @@ public class VoiceService {
                     "말씀하실 내용을 다시 입력해 주세요."
             );
         }
+        if ((request.latitude() == null) != (request.longitude() == null)
+                || request.latitude() != null && (request.latitude() < -90 || request.latitude() > 90)
+                || request.longitude() != null && (request.longitude() < -180 || request.longitude() > 180)) {
+            throw new ApiException(
+                    ErrorCode.INVALID_REQUEST,
+                    "위도와 경도를 올바른 범위로 함께 입력해야 합니다.",
+                    "현재 위치 정보를 다시 확인해 주세요."
+            );
+        }
     }
 
     private String resolveText(VoiceRequest request) {
@@ -77,5 +90,16 @@ public class VoiceService {
             return speechTranscriber.transcribe(request.audio());
         }
         return request.text().trim();
+    }
+
+    // 기존 IntentHandler는 요청 객체를 받지 않으므로 날씨 대화에 한해 좌표를 세션 슬롯으로 전달한다.
+    private SessionState withWeatherCoordinates(SessionState session, VoiceRequest request) {
+        if (session.intent() != Intent.WEATHER_INFO || !request.hasCoordinates()) {
+            return session;
+        }
+        Map<String, Object> slots = new LinkedHashMap<>(session.slots());
+        slots.put("latitude", request.latitude());
+        slots.put("longitude", request.longitude());
+        return new SessionState(session.userId(), session.intent(), session.step(), slots);
     }
 }

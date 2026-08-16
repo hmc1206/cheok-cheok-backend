@@ -1,0 +1,187 @@
+{
+  "info": {
+    "name": "척척 날씨 API 로컬 테스트",
+    "description": "accessToken만 입력한 뒤 1번 요청부터 순서대로 실행합니다.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);",
+          "const date = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(tomorrow);",
+          "pm.collectionVariables.set('tomorrowDate', date);"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "tomorrowDate",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. 로그인 확인 및 userId 저장",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/users/me"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('userId', body.userId);",
+              "pm.test('userId 저장됨', () => pm.expect(body.userId).to.be.a('string').and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. 현재 위치 날씨 직접 조회",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/weather?latitude=37.5665&longitude=126.9780",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "weather"],
+          "query": [
+            { "key": "latitude", "value": "37.5665" },
+            { "key": "longitude", "value": "126.9780" }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('현재 기온 있음', () => pm.expect(body.data.currentTemperature).to.be.a('number'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. 서울 내일 날씨 직접 조회",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/weather?location=서울&date={{tomorrowDate}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "weather"],
+          "query": [
+            { "key": "location", "value": "서울" },
+            { "key": "date", "value": "{{tomorrowDate}}" }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('예보 날짜 일치', () => pm.expect(body.data.forecastDate).to.eql(pm.collectionVariables.get('tomorrowDate')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. 음성 문장으로 서울 내일 날씨 조회",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"text\": \"내일 서울 날씨 알려줘\",\n  \"audio\": null,\n  \"latitude\": null,\n  \"longitude\": null\n}"
+        },
+        "url": "{{baseUrl}}/voice/process"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('날씨 결과 화면', () => { pm.expect(body.intent).to.eql('WEATHER_INFO'); pm.expect(body.screen).to.eql('WEATHER_RESULT'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. 음성 문장과 좌표로 현재 날씨 조회",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"text\": \"현재 위치 날씨 알려줘\",\n  \"audio\": null,\n  \"latitude\": 37.5665,\n  \"longitude\": 126.9780\n}"
+        },
+        "url": "{{baseUrl}}/voice/process"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('현재 날씨 결과', () => { pm.expect(body.intent).to.eql('WEATHER_INFO'); pm.expect(body.data.currentTemperature).to.be.a('number'); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

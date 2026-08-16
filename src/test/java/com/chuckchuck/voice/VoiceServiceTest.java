@@ -42,22 +42,21 @@ class VoiceServiceTest {
 
     @Test
     void classifiesNewConversationAndSavesProgress() {
-        VoiceRequest request = new VoiceRequest("u123", "부산 가는 기차표 끊어줘", null);
+        VoiceRequest request = new VoiceRequest("u123", "내일 날씨 알려줘", null);
         Map<String, Object> slots = new LinkedHashMap<>();
-        slots.put("departure", null);
-        slots.put("arrival", "부산");
+        slots.put("forecastDate", "2026-08-18");
         VoiceResponse response = new VoiceResponse(
-                Intent.TRAIN_BOOKING, "ASK_DEPARTURE", slots,
-                "어디서 출발하시나요?", "TRAIN_INPUT", null
+                Intent.WEATHER_INFO, "ASK_LOCATION", slots,
+                "어느 지역의 날씨를 알려드릴까요?", "WEATHER_INPUT", null
         );
 
         when(sessionService.find("u123")).thenReturn(Optional.empty());
-        when(classifier.classify(request.text())).thenReturn(Intent.TRAIN_BOOKING);
-        when(router.route(Intent.TRAIN_BOOKING)).thenReturn(handler);
+        when(classifier.classify(request.text())).thenReturn(Intent.WEATHER_INFO);
+        when(router.route(Intent.WEATHER_INFO)).thenReturn(handler);
         when(handler.handle(argThat(state -> state.step().equals("NEW")), eq(request.text()))).thenReturn(response);
 
         assertThat(service.process(request)).isEqualTo(response);
-        verify(sessionService).save(argThat(state -> state.step().equals("ASK_DEPARTURE")));
+        verify(sessionService).save(argThat(state -> state.step().equals("ASK_LOCATION")));
         verify(sessionService, never()).clear("u123");
     }
 

@@ -22,7 +22,7 @@ class KioskIntentHandlerTest {
         KioskIntentHandler handler = new KioskIntentHandler(service);
 
         VoiceResponse response = handler.handle(
-                new SessionState("u123", Intent.KIOSK_TRAIN, "NEW", Map.of()),
+                new SessionState("u123", Intent.KIOSK_HELP, "NEW", Map.of()),
                 "키오스크 연습할래"
         );
 

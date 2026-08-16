@@ -16,10 +16,10 @@ class IntentRouterTest {
 
     @Test
     void routesIntentToMatchingHandler() {
-        IntentHandler handler = handler(Intent.TRAIN_BOOKING);
+        IntentHandler handler = handler(Intent.MAP_ROUTE);
         IntentRouter router = new IntentRouter(List.of(handler));
 
-        assertThat(router.route(Intent.TRAIN_BOOKING)).isSameAs(handler);
+        assertThat(router.route(Intent.MAP_ROUTE)).isSameAs(handler);
     }
 
     @Test

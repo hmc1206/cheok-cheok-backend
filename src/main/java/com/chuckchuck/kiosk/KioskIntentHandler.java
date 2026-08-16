@@ -19,13 +19,13 @@ public class KioskIntentHandler implements IntentHandler {
 
     @Override
     public Intent supports() {
-        return Intent.KIOSK_TRAIN;
+        return Intent.KIOSK_HELP;
     }
 
     @Override
     public VoiceResponse handle(SessionState session, String userText) {
         return new VoiceResponse(
-                Intent.KIOSK_TRAIN,
+                Intent.KIOSK_HELP,
                 "DONE",
                 Map.of(),
                 "키오스크 연습을 시작할게요. 연습할 화면을 골라 주세요.",

@@ -36,7 +36,7 @@ class SessionServiceTest {
 
     @Test
     void savesSessionForTenMinutes() {
-        SessionState state = new SessionState("u123", Intent.TRAIN_BOOKING, "ASK_DATE", Map.of());
+        SessionState state = new SessionState("u123", Intent.MAP_ROUTE, "ASK_ORIGIN", Map.of());
 
         sessionService.save(state);
 
@@ -46,14 +46,14 @@ class SessionServiceTest {
     @Test
     void readsSlotsContainingNullValues() throws Exception {
         Map<String, Object> slots = new LinkedHashMap<>();
-        slots.put("departure", null);
-        slots.put("arrival", "부산");
-        SessionState state = new SessionState("u123", Intent.TRAIN_BOOKING, "ASK_DEPARTURE", slots);
+        slots.put("origin", null);
+        slots.put("destination", "부산");
+        SessionState state = new SessionState("u123", Intent.MAP_ROUTE, "ASK_ORIGIN", slots);
         when(valueOperations.get("voice:session:u123")).thenReturn(objectMapper.writeValueAsString(state));
 
         SessionState loaded = sessionService.find("u123").orElseThrow();
 
-        assertThat(loaded.slots()).containsEntry("departure", null).containsEntry("arrival", "부산");
+        assertThat(loaded.slots()).containsEntry("origin", null).containsEntry("destination", "부산");
     }
 
     @Test

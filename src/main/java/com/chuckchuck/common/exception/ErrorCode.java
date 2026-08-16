@@ -17,6 +17,10 @@ public enum ErrorCode {
     UNSAFE_APP_BLOCKED(HttpStatus.FORBIDDEN, "허용되지 않은 앱 연결입니다.", "안전을 위해 연결을 막았어요."),
     GEOCODE_NOT_FOUND(HttpStatus.NOT_FOUND, "장소를 찾을 수 없습니다.", "장소를 다시 한번 말씀해 주시겠어요?"),
     GEOCODE_API_FAIL(HttpStatus.BAD_GATEWAY, "지도 서비스 연결에 실패했습니다.", "지도 연결이 원활하지 않아요. 잠시 후 다시 해 주세요."),
+    WEATHER_LOCATION_NOT_FOUND(HttpStatus.NOT_FOUND, "날씨를 조회할 지역을 찾지 못했습니다.", "지역 이름을 다시 말씀해 주세요."),
+    WEATHER_DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 날짜의 날씨 정보를 찾지 못했습니다.", "해당 날짜의 날씨를 아직 확인할 수 없어요."),
+    WEATHER_DATE_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "지원하지 않는 예보 날짜입니다.", "너무 먼 날짜의 날씨는 아직 확인할 수 없어요."),
+    WEATHER_API_FAIL(HttpStatus.BAD_GATEWAY, "날씨 서비스 연결에 실패했습니다.", "지금은 날씨 정보를 가져오지 못했어요. 잠시 후 다시 해 주세요."),
     MAX_RETRY_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "재질문 횟수를 초과했습니다.", "화면에서 직접 선택해 주시겠어요?");
 
     private final HttpStatus status;
