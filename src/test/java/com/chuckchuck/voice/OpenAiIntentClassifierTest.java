@@ -36,6 +36,7 @@ class OpenAiIntentClassifierTest {
                 .andExpect(content().string(containsString("json_schema")))
                 .andExpect(content().string(containsString("MAP_ROUTE")))
                 .andExpect(content().string(containsString("WEATHER_INFO")))
+                .andExpect(content().string(containsString("MEDICAL_ROUTE")))
                 .andRespond(withSuccess("""
                         {
                           "choices": [

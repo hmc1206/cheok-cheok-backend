@@ -9,6 +9,6 @@ public record MedicalRouteResponseDto(
 ) {
     public record RouteData(
             String naverMapAppUrl,
-            String neverMapWebUrl
+            String naverMapWebUrl
     ) {}
 }

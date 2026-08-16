@@ -74,7 +74,7 @@ API 명세서`, `네이버 지도 통합 경로 연동 API 명세서`는 하위 
 
 | 필드 | 타입 | 필수 | 설명 |
 | --- | --- | --- | --- |
-| `intent` | string | Y | `YOUTUBE_PLAY`, `WEATHER_INFO`, `MAP_ROUTE`, `KIOSK_HELP`, `UNKNOWN` 중 하나 |
+| `intent` | string | Y | `YOUTUBE_PLAY`, `WEATHER_INFO`, `MEDICAL_ROUTE`, `MAP_ROUTE`, `KIOSK_HELP`, `UNKNOWN` 중 하나 |
 | `step` | string | Y | 대화 진행 단계. 단발성 기능은 `DONE` |
 | `slots` | object | Y | 현재까지 수집한 누적 파라미터 |
 | `ttsText` | string | Y | 프론트가 즉시 TTS로 읽을 문장 |
@@ -686,3 +686,62 @@ GET /api/v1/weather?location=서울&date=2026-08-17
 - [ ] 외부 날씨 코드를 공통 날씨 코드로 변환한다.
 - [ ] API 키와 위치정보를 코드 또는 로그에 남기지 않는다.
 - [ ] 정상 흐름과 주요 실패 흐름 테스트가 통과한다.
+
+## 14. 병원·약국 검색 API
+
+### 14.1 음성 통합 API
+
+#### `POST /voice/process` (`MEDICAL_ROUTE`)
+
+현재 위치 주변의 병원 또는 약국을 검색하고 네이버 지도 앱·웹 URL과 TTS 문장을 반환한다.
+요청의 `latitude`와 `longitude`는 반드시 함께 전달한다.
+
+좌표가 없으면 다음과 같이 위치 권한을 안내한다.
+
+```json
+{
+  "intent": "MEDICAL_ROUTE",
+  "step": "ASK_LOCATION",
+  "slots": { "type": "PHARMACY" },
+  "ttsText": "가까운 약국을 찾으려면 현재 위치가 필요해요. 위치 권한을 허용해 주세요.",
+  "screen": "MEDICAL_INPUT",
+  "quickReplies": [
+    { "label": "현재 위치 사용", "value": "현재 위치" }
+  ],
+  "data": null
+}
+```
+
+검색이 완료되면 `step: DONE`, `screen: NAVER_MAP_VIEW`로 응답한다.
+
+```json
+{
+  "intent": "MEDICAL_ROUTE",
+  "step": "DONE",
+  "slots": { "type": "PHARMACY" },
+  "ttsText": "주변 약국 검색 결과를 찾았어요. 목적지는 새봄약국입니다. 네이버 지도를 열게요.",
+  "screen": "NAVER_MAP_VIEW",
+  "quickReplies": null,
+  "data": {
+    "naverMapAppUrl": "nmap://route/public?...",
+    "naverMapWebUrl": "https://map.naver.com/p/directions/..."
+  }
+}
+```
+
+### 14.2 직접 조회 API
+
+#### `POST /api/map/hospital`
+
+```json
+{
+  "userId": "u123",
+  "text": "가까운 약국 찾아줘",
+  "type": "PHARMACY",
+  "latitude": 37.5665,
+  "longitude": 126.978
+}
+```
+
+`type`은 `HOSPITAL` 또는 `PHARMACY` 중 하나다. 성공 응답은 음성 통합 API와 동일한
+`intent`, `step`, `ttsText`, `screen`, `data` 필드를 반환한다.
