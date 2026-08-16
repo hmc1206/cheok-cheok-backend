@@ -18,8 +18,13 @@ import com.chuckchuck.common.exception.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Open-Meteo의 지역 검색 결과를 좌표로 바꾸고, 해당 좌표의 예보를 조회한다.
+ * 외부 응답 형식은 이 클래스 안에만 두어 서비스의 응답 계약과 분리한다.
+ */
 @Component
 public class WeatherApiClient {
+    // 사용자는 "서울"처럼 짧게 말하므로, 국내 행정구역의 정식 명칭으로 보정해 검색 성공률을 높인다.
     private static final Map<String, String> KOREAN_REGION_ALIASES = Map.ofEntries(
             Map.entry("서울", "서울특별시"),
             Map.entry("부산", "부산광역시"),
@@ -67,6 +72,7 @@ public class WeatherApiClient {
                     locationName.replaceAll("\\s+", ""),
                     locationName
             );
+            // 한글 검색어가 URI 빌더에서 다시 인코딩되지 않도록 UTF-8로 한 번 인코딩한 절대 URI를 사용한다.
             String encodedName = URLEncoder.encode(normalizedName, StandardCharsets.UTF_8).replace("+", "%20");
             URI uri = URI.create(geocodingBaseUrl
                     + "/v1/search?name=" + encodedName
@@ -98,6 +104,7 @@ public class WeatherApiClient {
 
     public Forecast forecast(double latitude, double longitude, LocalDate date) {
         try {
+            // current는 오늘의 현재값, daily는 오늘과 미래 날짜에 공통으로 쓰는 일별 예보다.
             ForecastResponse response = forecastClient.get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/v1/forecast")
@@ -154,6 +161,7 @@ public class WeatherApiClient {
     ) {
     }
 
+    // 아래 record들은 Open-Meteo JSON 역직렬화 전용이며 프론트에는 WeatherData만 노출한다.
     @JsonIgnoreProperties(ignoreUnknown = true)
     record GeocodingResponse(List<GeocodingResult> results) {
     }

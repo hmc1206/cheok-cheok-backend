@@ -14,10 +14,14 @@ import com.chuckchuck.voice.IntentHandler;
 import com.chuckchuck.voice.QuickReply;
 import com.chuckchuck.voice.VoiceResponse;
 
+/**
+ * WEATHER_INFO 대화를 NEW → ASK_LOCATION → DONE 흐름으로 처리한다.
+ */
 @Component
 public class WeatherIntentHandler implements IntentHandler {
     private static final String ASK_LOCATION = "ASK_LOCATION";
     private static final String DONE = "DONE";
+    // 날짜와 명령 표현을 지워 "내일 서울 날씨 알려줘"에서 조회할 지역명 "서울"만 남긴다.
     private static final Pattern COMMAND_WORDS = Pattern.compile(
             "오늘|내일|모레|현재\\s*위치|지금\\s*있는\\s*곳|여기|날씨|기온|온도|"
                     + "비\\s*(?:가\\s*)?(?:와|오니|오나요|올까|와요)|눈\\s*(?:이\\s*)?(?:와|오니|오나요|올까|와요)|"
@@ -43,6 +47,7 @@ public class WeatherIntentHandler implements IntentHandler {
         slots.put("forecastDate", date.toString());
 
         String location = extractLocation(userText);
+        // 좌표는 VoiceService가 기존 IntentHandler 계약을 바꾸지 않고 전달하기 위해 슬롯에 넣는다.
         Double latitude = number(slots.get("latitude"));
         Double longitude = number(slots.get("longitude"));
 
@@ -56,6 +61,7 @@ public class WeatherIntentHandler implements IntentHandler {
                 longitude,
                 date
         );
+        // 외부 조회에만 필요한 내부 좌표는 최종 응답 슬롯에 노출하지 않는다.
         slots.clear();
         slots.put("location", data.location().name());
         slots.put("forecastDate", data.forecastDate().toString());
@@ -84,6 +90,7 @@ public class WeatherIntentHandler implements IntentHandler {
         if (userText.contains("내일")) return today.plusDays(1);
         if (userText.contains("오늘")) return today;
 
+        // 지역을 다시 물어보는 동안에도 첫 발화에서 요청한 날짜를 잃지 않는다.
         Object savedDate = slots.get("forecastDate");
         return savedDate == null ? today : weatherService.parseDate(savedDate.toString());
     }
@@ -130,6 +137,7 @@ public class WeatherIntentHandler implements IntentHandler {
         return date.getMonthValue() + "월 " + date.getDayOfMonth() + "일";
     }
 
+    // 받침 유무를 확인해 "맑음이에요", "비예요"처럼 자연스러운 TTS 문장을 만든다.
     private String withCopula(String value) {
         char last = value.charAt(value.length() - 1);
         boolean hasFinalConsonant = last >= '가' && last <= '힣' && (last - '가') % 28 != 0;

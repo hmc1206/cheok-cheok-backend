@@ -92,6 +92,7 @@ public class VoiceService {
         return request.text().trim();
     }
 
+    // 기존 IntentHandler는 요청 객체를 받지 않으므로 날씨 대화에 한해 좌표를 세션 슬롯으로 전달한다.
     private SessionState withWeatherCoordinates(SessionState session, VoiceRequest request) {
         if (session.intent() != Intent.WEATHER_INFO || !request.hasCoordinates()) {
             return session;

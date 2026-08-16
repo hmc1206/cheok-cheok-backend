@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service;
 import com.chuckchuck.common.exception.ApiException;
 import com.chuckchuck.common.exception.ErrorCode;
 
+/**
+ * 지역명 또는 기기 좌표를 하나의 조회 흐름으로 합치고,
+ * 외부 예보를 프론트가 사용하는 {@link WeatherData} 형식으로 변환한다.
+ */
 @Service
 public class WeatherService {
     private static final ZoneId KOREA = ZoneId.of("Asia/Seoul");
@@ -27,6 +31,7 @@ public class WeatherService {
         LocalDate forecastDate = date == null ? today() : date;
         validateDate(forecastDate);
 
+        // 사용자가 말한 지역을 우선하고, 지역이 없을 때만 기기가 보낸 현재 좌표를 사용한다.
         WeatherApiClient.ResolvedLocation resolvedLocation;
         if (location != null && !location.isBlank()) {
             resolvedLocation = apiClient.resolve(location.trim());
@@ -70,6 +75,7 @@ public class WeatherService {
             WeatherApiClient.Forecast forecast
     ) {
         boolean today = date.equals(today());
+        // 미래 날짜에는 "현재 기온"이 의미 없으므로 현재 관측값은 오늘 응답에만 포함한다.
         WeatherApiClient.Current current = today ? forecast.current() : null;
         Condition condition = Condition.from(
                 current != null && current.weatherCode() != null
@@ -79,6 +85,7 @@ public class WeatherService {
         int precipitationProbability = forecast.precipitationProbability() == null
                 ? 0
                 : forecast.precipitationProbability();
+        // 강수확률이 낮거나 누락돼도 날씨 코드가 비·눈이면 우산을 안내한다.
         boolean umbrellaRecommended = precipitationProbability >= 40 || condition.precipitation;
         String advice = umbrellaRecommended
                 ? "외출하실 때 우산을 챙기세요."
@@ -121,6 +128,7 @@ public class WeatherService {
         }
     }
 
+    // Open-Meteo의 세부 WMO 코드를 프론트가 안정적으로 처리할 수 있는 공통 코드로 줄인다.
     private enum Condition {
         CLEAR("CLEAR", "맑음", false),
         PARTLY_CLOUDY("PARTLY_CLOUDY", "구름 조금", false),
