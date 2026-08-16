@@ -104,4 +104,30 @@ class VoiceServiceTest {
         verify(sessionService).clear("u123");
     }
 
+    @Test
+    void passesCoordinatesToMedicalHandler() {
+        VoiceRequest request = new VoiceRequest(
+                "u123", "가까운 약국 찾아줘", null, 37.5665, 126.978
+        );
+        VoiceResponse response = new VoiceResponse(
+                Intent.MEDICAL_ROUTE,
+                "DONE",
+                Map.of("type", "PHARMACY"),
+                "주변 약국을 찾았어요.",
+                "NAVER_MAP_VIEW",
+                Map.of()
+        );
+
+        when(sessionService.find("u123")).thenReturn(Optional.empty());
+        when(classifier.classify(request.text())).thenReturn(Intent.MEDICAL_ROUTE);
+        when(router.route(Intent.MEDICAL_ROUTE)).thenReturn(handler);
+        when(handler.handle(argThat(state ->
+                state.slots().get("latitude").equals(37.5665)
+                        && state.slots().get("longitude").equals(126.978)
+        ), eq(request.text()))).thenReturn(response);
+
+        assertThat(service.process(request)).isEqualTo(response);
+        verify(sessionService).clear("u123");
+    }
+
 }

@@ -42,7 +42,7 @@ public class VoiceService {
                         "NEW",
                         null
                 ));
-        session = withWeatherCoordinates(session, request);
+        session = withCoordinates(session, request);
 
         VoiceResponse response = intentRouter.route(session.intent()).handle(session, userText);
         if (response.intent() != session.intent()) {
@@ -92,9 +92,11 @@ public class VoiceService {
         return request.text().trim();
     }
 
-    // 기존 IntentHandler는 요청 객체를 받지 않으므로 날씨 대화에 한해 좌표를 세션 슬롯으로 전달한다.
-    private SessionState withWeatherCoordinates(SessionState session, VoiceRequest request) {
-        if (session.intent() != Intent.WEATHER_INFO || !request.hasCoordinates()) {
+    // 기존 IntentHandler 계약을 유지하면서 현재 위치 기반 기능에만 좌표를 전달한다.
+    private SessionState withCoordinates(SessionState session, VoiceRequest request) {
+        boolean supportsCoordinates = session.intent() == Intent.WEATHER_INFO
+                || session.intent() == Intent.MEDICAL_ROUTE;
+        if (!supportsCoordinates || !request.hasCoordinates()) {
             return session;
         }
         Map<String, Object> slots = new LinkedHashMap<>(session.slots());
