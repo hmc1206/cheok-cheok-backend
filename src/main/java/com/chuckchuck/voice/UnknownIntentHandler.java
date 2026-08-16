@@ -20,7 +20,7 @@ public class UnknownIntentHandler implements IntentHandler {
                 Intent.UNKNOWN,
                 "DONE",
                 Map.of(),
-                "죄송해요. 유튜브, 길찾기, 기차역 안내, 키오스크 연습 중 하나를 말씀해 주세요.",
+                "죄송해요. 유튜브, 날씨, 길찾기, 키오스크 연습 중 하나를 말씀해 주세요.",
                 "VOICE_INPUT",
                 null
         );

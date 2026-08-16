@@ -41,7 +41,6 @@ API 명세서`, `네이버 지도 통합 경로 연동 API 명세서`는 하위 
 | --- | --- |
 | 유튜브 | 인앱 재생이 아니라 유튜브 앱 또는 웹으로 이동하는 외부 앱 딥링크를 실행한다. |
 | 지도 | 네이버 지도 딥링크 또는 SDK 임베드를 사용한다. 경로 계산은 네이버지도가 담당하고 서버는 좌표와 링크를 생성한다. |
-| 기차예매 | 네이버 지도로 기차역까지 가는 길만 안내한다. 시간표 확인과 예매는 네이버지도 화면에서 사용자가 직접 진행한다. |
 | 키오스크 | 사양 미정이다. 화면 흐름 확정 후 별도 API를 추가한다. |
 
 ## 2. 대화 공통 진입점
@@ -67,7 +66,7 @@ API 명세서`, `네이버 지도 통합 경로 연동 API 명세서`는 하위 
 {
   "userId": "u123",
   "audio": null,
-  "text": "부산 가는 기차표 끊어줘"
+  "text": "내일 서울 날씨 알려줘"
 }
 ```
 
@@ -75,7 +74,7 @@ API 명세서`, `네이버 지도 통합 경로 연동 API 명세서`는 하위 
 
 | 필드 | 타입 | 필수 | 설명 |
 | --- | --- | --- | --- |
-| `intent` | string | Y | `YOUTUBE_PLAY`, `WEATHER_INFO`, `MAP_ROUTE`, `TRAIN_BOOKING`, `KIOSK_TRAIN`, `UNKNOWN` 중 하나 |
+| `intent` | string | Y | `YOUTUBE_PLAY`, `WEATHER_INFO`, `MAP_ROUTE`, `KIOSK_HELP`, `UNKNOWN` 중 하나 |
 | `step` | string | Y | 대화 진행 단계. 단발성 기능은 `DONE` |
 | `slots` | object | Y | 현재까지 수집한 누적 파라미터 |
 | `ttsText` | string | Y | 프론트가 즉시 TTS로 읽을 문장 |
@@ -248,75 +247,7 @@ API 명세서`, `네이버 지도 통합 경로 연동 API 명세서`는 하위 
 좌표를 확정하지 못하면 `404 GEOCODE_NOT_FOUND`를 반환하거나
 `screen: MAP_NOT_FOUND`로 안내한다.
 
-## 5. 기차역 길찾기
-
-### `POST /voice/process` (`TRAIN_BOOKING`)
-
-기차 시간표 조회와 예매는 서버가 처리하지 않는다. 서버는 사용자가 말한 도시를
-적절한 기차역으로 매핑하고, 해당 역까지 가는 네이버 지도 링크만 제공한다.
-상태 흐름은 지도와 같은 `ASK_ORIGIN -> DONE`이다.
-
-### 1턴: 목적 도시만 입력된 경우
-
-```json
-{
-  "userId": "u123",
-  "text": "부산 가는 기차표 끊어줘"
-}
-```
-
-```json
-{
-  "intent": "TRAIN_BOOKING",
-  "step": "ASK_ORIGIN",
-  "slots": {
-    "arrivalCity": "부산",
-    "arrivalStation": "부산역"
-  },
-  "ttsText": "지금 계신 곳에서 출발할까요?",
-  "screen": "MAP_INPUT",
-  "quickReplies": [
-    { "label": "네, 여기서 출발", "value": "네" },
-    { "label": "다른 곳에서 출발", "value": "다른 곳" }
-  ],
-  "data": null
-}
-```
-
-### 2턴: 기차역 경로 확정
-
-```json
-{
-  "intent": "TRAIN_BOOKING",
-  "step": "DONE",
-  "slots": {
-    "origin": "현재위치",
-    "arrivalStation": "부산역"
-  },
-  "ttsText": "부산역까지 가는 길을 지도에서 보여드릴게요. 지도 안에서 기차 시간표도 확인하실 수 있어요.",
-  "screen": "NAVER_MAP_VIEW",
-  "quickReplies": null,
-  "data": {
-    "resolvedStart": {
-      "name": "현재위치",
-      "lat": 37.5665,
-      "lng": 126.9780
-    },
-    "resolvedGoal": {
-      "name": "부산역",
-      "lat": 35.1152,
-      "lng": 129.0416
-    },
-    "naverMapAppUrl": "nmap://route/public?slat=37.5665&slng=126.9780&sname=%ED%98%84%EC%9E%AC%EC%9C%84%EC%B9%98&dlat=35.1152&dlng=129.0416&dname=%EB%B6%80%EC%82%B0%EC%97%AD&appname=com.chuckchuck.app",
-    "naverMapWebUrl": "https://map.naver.com/p/directions/..."
-  }
-}
-```
-
-`data`는 `MAP_ROUTE`와 같은 구조다. 기존 시간표 후보 `candidates`, 티켓 화면,
-예약 저장, 예약 취소와 목록 API는 v2.0에서 사용하지 않는다.
-
-## 6. 키오스크 사용 안내
+## 5. 키오스크 사용 안내
 
 키오스크 화면 흐름과 API는 아직 확정되지 않았다. 사양이 확정되면 별도 API를
 추가한다.
@@ -327,7 +258,7 @@ API 명세서`, `네이버 지도 통합 경로 연동 API 명세서`는 하위 
 - 매장별 UI 차이 대응
 - 결제 실패와 입력 시간 초과 처리
 
-## 7. 인증
+## 6. 인증
 
 ### `GET /oauth2/authorization/google`
 
@@ -364,12 +295,12 @@ HttpOnly 쿠키의 Refresh Token을 검증하고 새 Access Token을 반환한�
 }
 ```
 
-## 8. 기능별 링크 생성 API
+## 7. 기능별 링크 생성 API
 
 `/voice/process`가 내부에서 사용하는 로직이다. QA, 디버깅 또는 링크 단독
 재생성이 필요할 때 직접 호출한다.
 
-### 8.1 `GET /api/v1/youtube/link`
+### 7.1 `GET /api/v1/youtube/link`
 
 | 항목 | 내용 |
 | --- | --- |
@@ -389,7 +320,7 @@ GET /api/v1/youtube/link?keyword=%EC%95%84%EC%9D%B4%EC%9C%A0
 }
 ```
 
-### 8.2 `POST /api/v1/routes/naver-link`
+### 7.2 `POST /api/v1/routes/naver-link`
 
 ```json
 {
@@ -427,7 +358,7 @@ GET /api/v1/youtube/link?keyword=%EC%95%84%EC%9D%B4%EC%9C%A0
 
 `appname`은 네이버 개발자센터에 등록한 호출 앱 식별자를 사용한다.
 
-## 9. 오류 코드
+## 8. 오류 코드
 
 | HTTP | 오류 코드 | 발생 시점 | 대응 |
 | --- | --- | --- | --- |
@@ -449,15 +380,15 @@ GET /api/v1/youtube/link?keyword=%EC%95%84%EC%9D%B4%EC%9C%A0
 | 408 | `KIOSK_ACTION_TIMEOUT` | 키오스크 입력 시간 초과 | 사양 확정 후 적용한다. |
 | 500 | `INTERNAL_ERROR` | 서버 내부 오류 | 일반 오류 문구를 안내한다. |
 
-## 10. 프론트엔드 처리 가이드
+## 9. 프론트엔드 처리 가이드
 
-### 10.1 `quickReplies`
+### 9.1 `quickReplies`
 
 서버가 질문을 반환하면 프론트는 `ttsText`를 읽는 동시에 `quickReplies`를 큰
 버튼으로 표시한다. 사용자가 버튼을 누르면 해당 버튼의 `value`를 `text`에 담아
 `/voice/process`를 다시 호출한다.
 
-### 10.2 딥링크와 웹 Fallback
+### 9.2 딥링크와 웹 Fallback
 
 1. `data.app_url` 또는 `data.naverMapAppUrl` 실행을 시도한다.
 2. `canOpenURL` 또는 `resolveActivity`로 실행 가능 여부를 확인한다.
@@ -489,7 +420,7 @@ fun openDeepLink(context: Context, appUrl: String, webUrl: String) {
 }
 ```
 
-### 10.3 모바일 앱 스키마 화이트리스트
+### 9.3 모바일 앱 스키마 화이트리스트
 
 #### iOS `Info.plist`
 
@@ -522,7 +453,7 @@ fun openDeepLink(context: Context, appUrl: String, webUrl: String) {
 이 설정이 없으면 Android 11(API 30) 이상에서 앱이 설치되어 있어도
 `resolveActivity`가 `null`을 반환해 웹 Fallback만 실행될 수 있다.
 
-## 11. 용어
+## 10. 용어
 
 | 용어 | 설명 |
 | --- | --- |
@@ -535,17 +466,16 @@ fun openDeepLink(context: Context, appUrl: String, webUrl: String) {
 | Redis 세션 | 대화 중간 상태를 저장하는 임시 저장소. 10분 미활동 시 삭제한다. |
 | STT / TTS | 음성을 텍스트로 변환 / 텍스트를 음성으로 변환 |
 
-## 12. 다음 단계
+## 11. 다음 단계
 
 - [ ] 유튜브 딥링크를 Android와 iOS 실기기에서 테스트
 - [ ] 네이버 지도 `appname`을 개발자센터에 등록하고 실기기에서 테스트
 - [ ] Geocoding 결과 캐싱 정책 확정. Redis TTL 1일 제안
-- [ ] 지역명에서 기차역으로 매핑하는 로직의 정확도 확인
 - [ ] 키오스크 화면 흐름 확정 후 API 설계 추가
 - [ ] Postman 컬렉션 작성 및 공유
 - [ ] Swagger/OpenAPI 자동 문서화 연동
 
-## 13. 완료 기준
+## 12. 완료 기준
 
 - 요청과 응답이 v2.0 계약을 따른다.
 - `/voice/process`가 음성 입력과 `quickReplies` 버튼 입력을 같은 흐름으로 처리한다.
@@ -556,7 +486,7 @@ fun openDeepLink(context: Context, appUrl: String, webUrl: String) {
 - `./gradlew test`가 통과한다.
 - 실제 비밀값과 개인정보를 코드, Git 또는 로그에 남기지 않는다.
 
-## 14. 날씨 API
+## 13. 날씨 API
 
 > 버전: v1.1
 > 추가일: 2026-08-16
@@ -572,7 +502,7 @@ fun openDeepLink(context: Context, appUrl: String, webUrl: String) {
 - "지금 있는 곳 날씨 알려줘"
 - "오늘 우산 가져가야 해?"
 
-### 14.1 음성 통합 API
+### 13.1 음성 통합 API
 
 #### `POST /voice/process` (`WEATHER_INFO`)
 
@@ -673,7 +603,7 @@ fun openDeepLink(context: Context, appUrl: String, webUrl: String) {
 
 예보 날짜에는 `currentTemperature`, `feelsLikeTemperature`, `humidity`가 `null`일 수 있다.
 
-### 14.2 직접 조회 API
+### 13.2 직접 조회 API
 
 #### `GET /api/v1/weather`
 
@@ -713,7 +643,7 @@ GET /api/v1/weather?location=서울&date=2026-08-17
 }
 ```
 
-### 14.3 날씨 상태 코드
+### 13.3 날씨 상태 코드
 
 | 코드 | 표시 문구 |
 | --- | --- |
@@ -728,7 +658,7 @@ GET /api/v1/weather?location=서울&date=2026-08-17
 
 기상청의 하늘상태(`SKY`)와 강수형태(`PTY`) 코드는 백엔드에서 위 공통 코드로 변환한다.
 
-### 14.4 오류 코드
+### 13.4 오류 코드
 
 | HTTP | 오류 코드 | 발생 조건 |
 | --- | --- | --- |
@@ -739,7 +669,7 @@ GET /api/v1/weather?location=서울&date=2026-08-17
 | 404 | `WEATHER_DATA_NOT_FOUND` | 해당 날짜의 예보 자료 없음 |
 | 502 | `WEATHER_API_FAIL` | 외부 날씨 또는 지역 검색 API 호출 실패 |
 
-### 14.5 프론트엔드 처리
+### 13.5 프론트엔드 처리
 
 1. `WEATHER_INFO`를 `/weather` 화면으로 연결한다.
 2. `ttsText`를 즉시 읽고 큰 글자로 함께 표시한다.
@@ -747,7 +677,7 @@ GET /api/v1/weather?location=서울&date=2026-08-17
 4. `umbrellaRecommended`가 `true`면 우산 안내를 강조한다.
 5. 위치 권한이 거부되면 지역 이름을 직접 말하도록 안내한다.
 
-### 14.6 완료 기준
+### 13.6 완료 기준
 
 - [ ] `WEATHER_INFO` 의도 분류가 동작한다.
 - [ ] 오늘, 내일, 모레, 지역명, 현재 위치 요청을 처리한다.

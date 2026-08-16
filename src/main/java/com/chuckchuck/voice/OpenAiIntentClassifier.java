@@ -25,8 +25,7 @@ public class OpenAiIntentClassifier implements IntentClassifier {
             YOUTUBE_PLAY: 유튜브 영상 검색 또는 실행
             WEATHER_INFO: 현재 또는 미래의 날씨, 기온, 비, 눈, 우산 관련 요청
             MAP_ROUTE: 장소까지 지도나 길찾기 요청
-            TRAIN_BOOKING: 기차, 열차, 기차역 또는 기차표 관련 요청
-            KIOSK_TRAIN: 키오스크 사용 연습 요청
+            KIOSK_HELP: 키오스크 사용 연습 요청
             UNKNOWN: 나머지 요청
             """;
 
@@ -85,8 +84,7 @@ public class OpenAiIntentClassifier implements IntentClassifier {
                         "intent", Map.of(
                                 "type", "string",
                                 "enum", List.of(
-                                        "YOUTUBE_PLAY", "WEATHER_INFO", "MAP_ROUTE", "TRAIN_BOOKING",
-                                        "KIOSK_TRAIN", "UNKNOWN"
+                                        "YOUTUBE_PLAY", "WEATHER_INFO", "MAP_ROUTE", "KIOSK_HELP", "UNKNOWN"
                                 )
                         )
                 ),
