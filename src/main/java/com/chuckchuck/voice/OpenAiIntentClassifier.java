@@ -23,6 +23,7 @@ public class OpenAiIntentClassifier implements IntentClassifier {
             당신은 어르신 음성 비서 '척척'의 의도 분류기입니다.
             사용자의 문장을 다음 중 정확히 하나로 분류하세요.
             YOUTUBE_PLAY: 유튜브 영상 검색 또는 실행
+            WEATHER_INFO: 현재 또는 미래의 날씨, 기온, 비, 눈, 우산 관련 요청
             MAP_ROUTE: 장소까지 지도나 길찾기 요청
             TRAIN_BOOKING: 기차, 열차, 기차역 또는 기차표 관련 요청
             KIOSK_TRAIN: 키오스크 사용 연습 요청
@@ -84,7 +85,7 @@ public class OpenAiIntentClassifier implements IntentClassifier {
                         "intent", Map.of(
                                 "type", "string",
                                 "enum", List.of(
-                                        "YOUTUBE_PLAY", "MAP_ROUTE", "TRAIN_BOOKING",
+                                        "YOUTUBE_PLAY", "WEATHER_INFO", "MAP_ROUTE", "TRAIN_BOOKING",
                                         "KIOSK_TRAIN", "UNKNOWN"
                                 )
                         )

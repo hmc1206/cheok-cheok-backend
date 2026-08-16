@@ -35,6 +35,7 @@ class OpenAiIntentClassifierTest {
                 .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer test-key"))
                 .andExpect(content().string(containsString("json_schema")))
                 .andExpect(content().string(containsString("MAP_ROUTE")))
+                .andExpect(content().string(containsString("WEATHER_INFO")))
                 .andRespond(withSuccess("""
                         {
                           "choices": [
