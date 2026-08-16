@@ -47,7 +47,7 @@ public class YoutubeController {
     }
 
     @PostMapping("/search")
-    public List<YoutubeVideoResponse> search(
+    public YoutubeSearchListResponse search(
             @RequestBody YoutubeSearchRequest request
     ) {
         return youtubeService.search(request.keyword());

@@ -13,16 +13,27 @@ public class YoutubeService {
         this.youtubeClient = youtubeClient;
     }
 
-    public List<YoutubeVideoResponse> search(String keyword) {
+    public YoutubeSearchListResponse search(String keyword) {
 
-        YoutubeGoogleResponse response =
-                youtubeClient.search(keyword);
+        // 1. 유튜브 API 검색 호출
+        YoutubeGoogleResponse response = youtubeClient.search(keyword);
 
-        return response.items().stream()
+        // 2. 검색 데이터 가공하여 영상 리스트(List) 생성
+        List<YoutubeVideoResponse> videoList = response.items().stream()
                 .filter(item -> item.id() != null)
                 .filter(item -> item.id().videoId() != null)
                 .map(YoutubeVideoResponse::from)
                 .toList();
+
+        // 3. 첫 번째 대화에서 요구한 JSON 포맷 구조로 최종 조립하여 반환
+        return new YoutubeSearchListResponse(
+                "YOUTUBE_SEARCH",                                 // intent
+                "CONFIRM",                                        // step
+                new YoutubeSearchListResponse.Slots(keyword),     // slots
+                keyword + " 영상 검색목록입니다",                     // ttsText
+                "APP_LAUNCH",                                     // screen
+                new YoutubeSearchListResponse.Data(videoList)     // data (가공한 리스트 래핑)
+        );
     }
 
     public YoutubePlayResponse play(String query) {
