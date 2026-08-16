@@ -19,7 +19,7 @@ import com.chuckchuck.common.exception.ErrorCode;
 public class WeatherService {
     private static final ZoneId KOREA = ZoneId.of("Asia/Seoul");
     private static final ZoneOffset KOREA_OFFSET = ZoneOffset.ofHours(9);
-    private static final int MAX_FORECAST_DAYS = 15;
+    private static final int MAX_FORECAST_DAYS = 5;
 
     private final WeatherApiClient apiClient;
 
@@ -78,9 +78,8 @@ public class WeatherService {
         // 미래 날짜에는 "현재 기온"이 의미 없으므로 현재 관측값은 오늘 응답에만 포함한다.
         WeatherApiClient.Current current = today ? forecast.current() : null;
         Condition condition = Condition.from(
-                current != null && current.weatherCode() != null
-                        ? current.weatherCode()
-                        : forecast.weatherCode()
+                current == null ? forecast.skyCode() : current.skyCode(),
+                current == null ? forecast.precipitationType() : current.precipitationType()
         );
         int precipitationProbability = forecast.precipitationProbability() == null
                 ? 0
@@ -103,7 +102,7 @@ public class WeatherService {
                 forecast.maximumTemperature(),
                 forecast.precipitationProbability(),
                 current == null ? null : current.humidity(),
-                current == null ? forecast.maximumWindSpeed() : current.windSpeed(),
+                current == null ? forecast.windSpeed() : current.windSpeed(),
                 umbrellaRecommended,
                 advice
         );
@@ -128,7 +127,7 @@ public class WeatherService {
         }
     }
 
-    // Open-Meteo의 세부 WMO 코드를 프론트가 안정적으로 처리할 수 있는 공통 코드로 줄인다.
+    // 기상청 SKY·PTY 코드를 프론트가 안정적으로 처리할 수 있는 공통 코드로 줄인다.
     private enum Condition {
         CLEAR("CLEAR", "맑음", false),
         PARTLY_CLOUDY("PARTLY_CLOUDY", "구름 조금", false),
@@ -149,15 +148,17 @@ public class WeatherService {
             this.precipitation = precipitation;
         }
 
-        static Condition from(Integer code) {
-            if (code == null) return UNKNOWN;
-            if (code == 0) return CLEAR;
-            if (code == 1 || code == 2) return PARTLY_CLOUDY;
-            if (code == 3) return CLOUDY;
-            if (code == 45 || code == 48) return FOG;
-            if (code >= 80 && code <= 82) return SHOWER;
-            if ((code >= 51 && code <= 67) || (code >= 95 && code <= 99)) return RAIN;
-            if ((code >= 71 && code <= 77) || code == 85 || code == 86) return SNOW;
+        static Condition from(Integer skyCode, Integer precipitationType) {
+            if (precipitationType != null) {
+                if (precipitationType == 4) return SHOWER;
+                if (precipitationType == 3 || precipitationType == 7) return SNOW;
+                if (precipitationType == 1 || precipitationType == 2
+                        || precipitationType == 5 || precipitationType == 6) return RAIN;
+            }
+            if (skyCode == null) return UNKNOWN;
+            if (skyCode == 1) return CLEAR;
+            if (skyCode == 3) return PARTLY_CLOUDY;
+            if (skyCode == 4) return CLOUDY;
             return UNKNOWN;
         }
     }

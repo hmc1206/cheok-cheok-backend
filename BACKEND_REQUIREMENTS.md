@@ -558,9 +558,10 @@ fun openDeepLink(context: Context, appUrl: String, webUrl: String) {
 
 ## 14. 날씨 API
 
-> 버전: v1.0
+> 버전: v1.1
 > 추가일: 2026-08-16
-> 외부 제공업체: Open-Meteo Forecast API / Geocoding API
+> 최종 수정: 2026-08-17
+> 외부 제공업체: 기상청 API허브 동네예보 격자자료 / Open-Meteo Geocoding API
 
 사용자가 지역과 날짜를 말하면 날씨를 조회하고, 어르신이 이해하기 쉬운 문장으로 안내한다.
 
@@ -685,7 +686,7 @@ fun openDeepLink(context: Context, appUrl: String, webUrl: String) {
 | `longitude` | number | 조건부 | 현재 위치 경도 |
 | `date` | string | N | `YYYY-MM-DD`, 생략하면 오늘 |
 
-지역명 또는 위도와 경도 중 하나를 전달한다. 오늘부터 15일 뒤까지 조회할 수 있다.
+지역명 또는 위도와 경도 중 하나를 전달한다. 기상청 단기예보 제공 범위에 맞춰 오늘부터 5일 뒤까지 조회할 수 있다.
 
 ```http
 GET /api/v1/weather?location=서울&date=2026-08-17
@@ -725,7 +726,7 @@ GET /api/v1/weather?location=서울&date=2026-08-17
 | `SNOW` | 눈 |
 | `UNKNOWN` | 날씨 정보 확인 불가 |
 
-외부 제공업체의 WMO 날씨 코드는 백엔드에서 위 공통 코드로 변환한다.
+기상청의 하늘상태(`SKY`)와 강수형태(`PTY`) 코드는 백엔드에서 위 공통 코드로 변환한다.
 
 ### 14.4 오류 코드
 

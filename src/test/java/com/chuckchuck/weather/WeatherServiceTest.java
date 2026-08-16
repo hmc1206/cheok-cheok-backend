@@ -18,8 +18,8 @@ class WeatherServiceTest {
         WeatherApiClient.ResolvedLocation location = new WeatherApiClient.ResolvedLocation(
                 "서울특별시", 37.5665, 126.978
         );
-        WeatherApiClient.Current current = new WeatherApiClient.Current(27.1, 29.0, 78, 61, 2.1);
-        WeatherApiClient.Forecast forecast = new WeatherApiClient.Forecast(61, 24.0, 29.0, 70, 4.2, current);
+        WeatherApiClient.Current current = new WeatherApiClient.Current(27.1, null, 78, 4, 1, 2.1);
+        WeatherApiClient.Forecast forecast = new WeatherApiClient.Forecast(4, 1, 24.0, 29.0, 70, 4.2, current);
         when(apiClient.resolve("서울")).thenReturn(location);
         when(apiClient.forecast(location.latitude(), location.longitude(), today)).thenReturn(forecast);
 
