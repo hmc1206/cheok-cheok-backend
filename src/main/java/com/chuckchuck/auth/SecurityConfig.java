@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.AuthenticationEntryPoint; // 💡 임포트 추가
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -30,14 +29,6 @@ public class SecurityConfig {
             OAuth2LoginSuccessHandler successHandler,
             RestAuthenticationEntryPoint authenticationEntryPoint
     ) throws Exception {
-
-        // 💡 [핵심 추가] 최외곽 예외 처리와 토큰 필터 양쪽 모두에서 원인을 찍어줄 공통 디버깅 엔트리 포인트를 만듭니다.
-        AuthenticationEntryPoint debugEntryPoint = (request, response, authException) -> {
-            System.out.println("🚨 [최종 시큐리티 차단 원인 발견]: " + authException.getMessage());
-            authException.printStackTrace(); // 에러 스택트레이스를 인텔리제이에 강제로 출력!
-            response.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage());
-        };
-
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -53,12 +44,10 @@ public class SecurityConfig {
                 )
                 .oauth2ResourceServer(resourceServer -> resourceServer
                         .jwt(jwt -> jwt.decoder(tokenService.accessTokenDecoder()))
-                        // 💡 토큰 리소스 서버 엔트리 포인트를 디버깅용으로 교체
-                        .authenticationEntryPoint(debugEntryPoint)
+                        .authenticationEntryPoint(authenticationEntryPoint)
                 )
                 .exceptionHandling(exceptions -> exceptions
-                        // 💡 [가장 중요] 로그를 가로채서 숨기던 최외곽 엔트리 포인트까지 디버깅용으로 완벽하게 교체합니다!
-                        .authenticationEntryPoint(debugEntryPoint)
+                        .authenticationEntryPoint(authenticationEntryPoint)
                 );
         return http.build();
     }

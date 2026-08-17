@@ -49,6 +49,6 @@ class AuthControllerTest {
     void rejectsRefreshWithoutCookie() throws Exception {
         mockMvc.perform(post("/api/auth/refresh"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errorCode").value("UNAUTHORIZED"));
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
     }
 }

@@ -22,12 +22,14 @@ public class OpenAiIntentClassifier implements IntentClassifier {
     private static final String SYSTEM_PROMPT = """
             당신은 어르신 음성 비서 '척척'의 의도 분류기입니다.
             사용자의 문장을 다음 중 정확히 하나로 분류하세요.
-            YOUTUBE_PLAY: 유튜브 영상 검색 또는 실행
+            YOUTUBE_SEARCH: 유튜브 영상 목록을 검색하거나 찾아달라는 요청
+            YOUTUBE_PLAY: 특정 유튜브 영상이나 노래를 틀거나 재생하거나 보여달라는 요청
             WEATHER_INFO: 현재 또는 미래의 날씨, 기온, 비, 눈, 우산 관련 요청
             MEDICAL_ROUTE: 현재 위치 주변의 병원 또는 약국을 찾는 요청
             MAP_ROUTE: 특정 장소 이름이나 주소까지 지도 또는 길찾기 요청
             KIOSK_HELP: 키오스크 사용 연습 요청
             UNKNOWN: 나머지 요청
+            "네", "아니요", 지역명처럼 이전 질문에 답하는 짧은 문장은 UNKNOWN으로 분류하세요.
             """;
 
     private final RestClient restClient;
@@ -85,7 +87,7 @@ public class OpenAiIntentClassifier implements IntentClassifier {
                         "intent", Map.of(
                                 "type", "string",
                                 "enum", List.of(
-                                        "YOUTUBE_PLAY", "WEATHER_INFO", "MEDICAL_ROUTE", "MAP_ROUTE",
+                                        "YOUTUBE_SEARCH", "YOUTUBE_PLAY", "WEATHER_INFO", "MEDICAL_ROUTE", "MAP_ROUTE",
                                         "KIOSK_HELP", "UNKNOWN"
                                 )
                         )

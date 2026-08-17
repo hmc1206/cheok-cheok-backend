@@ -3,14 +3,13 @@ package com.chuckchuck.youtube;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
-import com.chuckchuck.voice.QuickReply;
 import org.springframework.stereotype.Component;
 
 import com.chuckchuck.session.SessionState;
 import com.chuckchuck.voice.Intent;
 import com.chuckchuck.voice.IntentHandler;
+import com.chuckchuck.voice.QuickReply;
 import com.chuckchuck.voice.VoiceResponse;
 
 @Component
@@ -18,10 +17,8 @@ public class YoutubeIntentHandler implements IntentHandler {
     private static final String CONFIRM = "CONFIRM";
     private static final String DONE = "DONE";
     private static final String SCREEN = "APP_LAUNCH";
-
-    private static final Pattern COMMAND_WORDS = Pattern.compile(
-            "유튜브(?:에서)?|동영상|영상|틀어\\s*줘|틀어|재생해\\s*줘|재생해|재생|보여\\s*줘|보여"
-    );
+    private static final String SEARCH = "SEARCH";
+    private static final String PLAY = "PLAY";
 
     private final YoutubeApiClient youtubeApiClient;
     private final YoutubeLinkBuilder linkBuilder;
@@ -43,16 +40,16 @@ public class YoutubeIntentHandler implements IntentHandler {
         if (CONFIRM.equals(session.step())) {
             return confirm(slots, userText);
         }
-        return search(slots, userText);
+        return preparePlay(slots, userText);
     }
 
-    private VoiceResponse search(Map<String, Object> slots, String userText) {
-        String query = extractQuery(userText);
+    private VoiceResponse preparePlay(Map<String, Object> slots, String userText) {
+        String query = YoutubeQuery.extract(userText);
         slots.put("query", query);
+        slots.put("action", PLAY);
 
         if (query.isBlank()) {
-            return done(slots, "어떤 영상을 찾을지 다시 말씀해 주세요.",
-                    YoutubeLinkResult.linkOnly(linkBuilder.forSearch("")));
+            return done(slots, "어떤 영상을 틀어드릴지 다시 말씀해 주세요.", null);
         }
 
         return youtubeApiClient.searchFirst(query)
@@ -61,14 +58,17 @@ public class YoutubeIntentHandler implements IntentHandler {
                     var links = linkBuilder.forVideo(video.videoId());
                     return new VoiceResponse(
                             Intent.YOUTUBE_PLAY, CONFIRM, slots,
-                            video.title() + " 영상을 열어드릴까요?",
+                            query + " 영상을 열어드릴까요?",
                             SCREEN,
                             List.of(new QuickReply("네, 열어줘", "네"), new QuickReply("아니요", "아니요")),
                             YoutubeLinkResult.preview(video, links)
                     );
                 })
-                .orElseGet(() -> done(slots, "해당 영상을 찾지 못했어요. 유튜브에서 검색해드릴게요.",
-                        YoutubeLinkResult.linkOnly(linkBuilder.forSearch(query))));
+                .orElseGet(() -> {
+                    slots.put("action", SEARCH);
+                    return done(slots, "해당 영상을 찾지 못했어요. 유튜브 검색 결과를 보여드릴게요.",
+                            YoutubeLinkResult.linkOnly(linkBuilder.forSearch(query)));
+                });
     }
 
     private VoiceResponse confirm(Map<String, Object> slots, String userText) {
@@ -88,7 +88,4 @@ public class YoutubeIntentHandler implements IntentHandler {
         return new VoiceResponse(Intent.YOUTUBE_PLAY, DONE, slots, ttsText, SCREEN, data);
     }
 
-    String extractQuery(String userText) {
-        return COMMAND_WORDS.matcher(userText).replaceAll(" ").replaceAll("\\s+", " ").trim();
-    }
 }

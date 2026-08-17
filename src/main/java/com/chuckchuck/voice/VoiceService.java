@@ -2,6 +2,7 @@ package com.chuckchuck.voice;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -35,13 +36,8 @@ public class VoiceService {
         validate(request);
         String userText = resolveText(request);
 
-        SessionState session = sessionService.find(request.userId())
-                .orElseGet(() -> new SessionState(
-                        request.userId(),
-                        intentClassifier.classify(userText),
-                        "NEW",
-                        null
-                ));
+        Intent classifiedIntent = intentClassifier.classify(userText);
+        SessionState session = selectSession(request.userId(), classifiedIntent);
         session = withCoordinates(session, request);
 
         VoiceResponse response = intentRouter.route(session.intent()).handle(session, userText);
@@ -56,6 +52,16 @@ public class VoiceService {
             sessionService.save(SessionState.from(request.userId(), response));
         }
         return response;
+    }
+
+    private SessionState selectSession(String userId, Intent classifiedIntent) {
+        Optional<SessionState> existingSession = sessionService.find(userId);
+
+        // "네", "서울" 같은 후속 답변은 UNKNOWN으로 분류되므로 기존 멀티턴 대화를 이어간다.
+        // 반대로 새 기능이 명확하면 남아 있던 대화를 버리고 NEW 단계에서 다시 시작한다.
+        return existingSession
+                .filter(session -> classifiedIntent == Intent.UNKNOWN || session.intent() == classifiedIntent)
+                .orElseGet(() -> new SessionState(userId, classifiedIntent, "NEW", null));
     }
 
     private void validate(VoiceRequest request) {

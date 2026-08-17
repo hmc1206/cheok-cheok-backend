@@ -5,9 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,25 +17,23 @@ import com.chuckchuck.voice.Intent;
 import com.chuckchuck.voice.VoiceResponse;
 
 class MapIntentHandlerTest {
-    private MapApiClient mapApiClient;
+    private NaverMapUrlService naverMapUrlService;
     private MapIntentHandler handler;
 
     @BeforeEach
     void setUp() {
-        mapApiClient = mock(MapApiClient.class);
-        handler = new MapIntentHandler(mapApiClient);
+        naverMapUrlService = mock(NaverMapUrlService.class);
+        handler = new MapIntentHandler(naverMapUrlService);
     }
 
     @Test
     void resolvesRegisteredAliasAndUsesCurrentLocation() {
-        RouteResult route = new RouteResult(
-                35,
-                1,
-                1_400,
-                List.of(RouteStep.bus("302번 버스 탑승", 25, "행복아파트"))
+        MapRouteController.NaverLinkResponse apiResponse = successfulResponse(
+                "nmap://route/public?start=current",
+                "https://map.naver.com/p/directions/current/home"
         );
-        when(mapApiClient.findRoute("현재위치", "경기도 성남시 분당구 행복로 10"))
-                .thenReturn(Optional.of(route));
+        when(naverMapUrlService.generateRouteUrls("현재위치", "경기도 성남시 분당구 행복로 10"))
+                .thenReturn(apiResponse);
 
         VoiceResponse question = handler.handle(newSession(), "아들 집 가는 길 알려줘");
         assertThat(question.step()).isEqualTo("ASK_ORIGIN");
@@ -51,7 +47,10 @@ class MapIntentHandlerTest {
         assertThat(result.step()).isEqualTo("DONE");
         assertThat(result.screen()).isEqualTo("MAP_RESULT");
         assertThat(result.slots()).containsEntry("origin", "현재위치");
-        assertThat(result.data()).isEqualTo(route);
+        assertThat(result.data()).isEqualTo(new RouteResult(
+                "nmap://route/public?start=current",
+                "https://map.naver.com/p/directions/current/home"
+        ));
     }
 
     @Test
@@ -73,7 +72,8 @@ class MapIntentHandlerTest {
 
     @Test
     void returnsNotFoundScreenWhenRouteIsEmpty() {
-        when(mapApiClient.findRoute("서울역", "부산역")).thenReturn(Optional.empty());
+        when(naverMapUrlService.generateRouteUrls("서울역", "부산역"))
+                .thenThrow(new IllegalStateException("검색 결과 없음"));
 
         VoiceResponse response = handler.handle(
                 session("ASK_ORIGIN", Map.of("destination", "부산역", "destinationAlias", "부산역")),
@@ -102,5 +102,16 @@ class MapIntentHandlerTest {
 
     private SessionState session(String step, Map<String, Object> slots) {
         return new SessionState("u123", Intent.MAP_ROUTE, step, slots);
+    }
+
+    private MapRouteController.NaverLinkResponse successfulResponse(String appUrl, String webUrl) {
+        MapRouteController.NaverLinkData data = new MapRouteController.NaverLinkData();
+        data.setNaverMapAppUrl(appUrl);
+        data.setNaverMapWebUrl(webUrl);
+
+        MapRouteController.NaverLinkResponse response = new MapRouteController.NaverLinkResponse();
+        response.setStatusCode(200);
+        response.setData(data);
+        return response;
     }
 }

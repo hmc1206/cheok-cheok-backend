@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import com.chuckchuck.auth.AuthProperties;
 import com.chuckchuck.auth.jwt.JwtTokenService;
@@ -23,7 +24,9 @@ class OAuth2LoginSuccessHandlerTest {
     void redirectsWithAccessTokenAndStoresRefreshTokenInHttpOnlyCookie() throws Exception {
         JwtTokenService tokenService = mock(JwtTokenService.class);
         AppUser user = AppUser.create("google-123", "hong@gmail.com", "홍길동", null);
-        OAuthUserPrincipal principal = new OAuthUserPrincipal(user, Map.of("sub", "google-123"), true);
+        OidcUser oidcUser = mock(OidcUser.class);
+        when(oidcUser.getAttributes()).thenReturn(Map.of("sub", "google-123"));
+        OAuthUserPrincipal principal = new OAuthUserPrincipal(user, oidcUser, true);
         when(tokenService.createTokenPair(user.getId())).thenReturn(new TokenPair("access-token", "refresh-token"));
         AuthProperties properties = new AuthProperties(
                 "test-jwt-secret-that-is-longer-than-thirty-two-bytes",
