@@ -3,7 +3,6 @@ package com.chuckchuck.youtube;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
@@ -16,28 +15,6 @@ import com.chuckchuck.voice.Intent;
 import com.chuckchuck.voice.VoiceResponse;
 
 class YoutubeIntentHandlerTest {
-
-    @Test
-    void returnsSearchResultLinkWithoutSelectingVideo() {
-        YoutubeApiClient client = mock(YoutubeApiClient.class);
-        YoutubeIntentHandler handler = new YoutubeIntentHandler(client, new YoutubeLinkBuilder());
-
-        VoiceResponse response = handler.handle(session(), "아이유 검색해줘");
-
-        assertThat(response.intent()).isEqualTo(Intent.YOUTUBE_PLAY);
-        assertThat(response.step()).isEqualTo("DONE");
-        assertThat(response.screen()).isEqualTo("APP_LAUNCH");
-        assertThat(response.slots())
-                .containsEntry("query", "아이유")
-                .containsEntry("action", "SEARCH");
-        assertThat(response.ttsText()).isEqualTo("아이유 검색 결과를 보여드릴게요.");
-        assertThat(response.quickReplies()).isNull();
-        assertThat(response.data()).isInstanceOfSatisfying(YoutubeLinkResult.class, data -> {
-            assertThat(data.appUrl()).contains("/results?search_query=%EC%95%84%EC%9D%B4%EC%9C%A0");
-            assertThat(data.webUrl()).contains("/results?search_query=%EC%95%84%EC%9D%B4%EC%9C%A0");
-        });
-        verifyNoInteractions(client);
-    }
 
     @Test
     void returnsConfirmationForPlayRequest() {

@@ -61,7 +61,7 @@ class VoiceServiceTest {
     }
 
     @Test
-    void continuesExistingConversationWithoutClassifyingAgain() {
+    void continuesExistingConversationWhenFollowUpHasNoNewIntent() {
         SessionState existing = new SessionState("u123", Intent.MAP_ROUTE, "ASK_ORIGIN", Map.of());
         VoiceResponse response = new VoiceResponse(
                 Intent.MAP_ROUTE, "DONE", Map.of(),
@@ -69,13 +69,36 @@ class VoiceServiceTest {
         );
 
         when(sessionService.find("u123")).thenReturn(Optional.of(existing));
+        when(classifier.classify("네")).thenReturn(Intent.UNKNOWN);
         when(router.route(Intent.MAP_ROUTE)).thenReturn(handler);
         when(handler.handle(existing, "네")).thenReturn(response);
 
         assertThat(service.process(new VoiceRequest("u123", "네", null))).isEqualTo(response);
-        verify(classifier, never()).classify("네");
+        verify(classifier).classify("네");
         verify(sessionService).clear("u123");
         verify(sessionService, never()).save(any());
+    }
+
+    @Test
+    void startsNewConversationWhenUserChangesIntent() {
+        SessionState weatherSession = new SessionState(
+                "u123", Intent.WEATHER_INFO, "ASK_LOCATION", Map.of("forecastDate", "2026-08-18")
+        );
+        VoiceResponse response = new VoiceResponse(
+                Intent.YOUTUBE_SEARCH, "CONFIRM", Map.of("query", "아이유"),
+                "아이유 검색 결과예요. 보고 싶은 영상을 골라 주세요.",
+                "YOUTUBE_SEARCH_RESULT", Map.of("videos", java.util.List.of())
+        );
+
+        when(sessionService.find("u123")).thenReturn(Optional.of(weatherSession));
+        when(classifier.classify("아이유 검색해줘")).thenReturn(Intent.YOUTUBE_SEARCH);
+        when(router.route(Intent.YOUTUBE_SEARCH)).thenReturn(handler);
+        when(handler.handle(argThat(state ->
+                state.intent() == Intent.YOUTUBE_SEARCH && state.step().equals("NEW")
+        ), eq("아이유 검색해줘"))).thenReturn(response);
+
+        assertThat(service.process(new VoiceRequest("u123", "아이유 검색해줘", null))).isEqualTo(response);
+        verify(sessionService).save(argThat(state -> state.intent() == Intent.YOUTUBE_SEARCH));
     }
 
     @Test

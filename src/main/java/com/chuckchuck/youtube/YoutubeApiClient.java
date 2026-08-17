@@ -1,5 +1,6 @@
 package com.chuckchuck.youtube;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
@@ -29,6 +30,28 @@ public class YoutubeApiClient {
                         0
                 ))
                 .findFirst();
+    }
+
+    public List<YoutubeVideoResponse> search(String query) {
+        YoutubeGoogleResponse response = youtubeClient.search(query);
+        if (response == null || response.items() == null) {
+            return List.of();
+        }
+
+        // 프론트 검색 화면 계약에 맞춰 영상 정보만 최대 10개까지 전달한다.
+        return response.items().stream()
+                .filter(item -> item != null && item.id() != null && item.id().videoId() != null)
+                .filter(item -> item.snippet() != null)
+                .limit(10)
+                .map(item -> new YoutubeVideoResponse(
+                        item.id().videoId(),
+                        item.snippet().title(),
+                        item.snippet().description(),
+                        item.snippet().channelTitle(),
+                        item.snippet().publishedAt(),
+                        thumbnailUrl(item.snippet().thumbnails())
+                ))
+                .toList();
     }
 
     private String thumbnailUrl(YoutubeGoogleResponse.Thumbnails thumbnails) {

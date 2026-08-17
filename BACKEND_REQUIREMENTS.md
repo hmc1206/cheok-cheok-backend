@@ -74,7 +74,7 @@ API 명세서`, `네이버 지도 통합 경로 연동 API 명세서`는 하위 
 
 | 필드 | 타입 | 필수 | 설명 |
 | --- | --- | --- | --- |
-| `intent` | string | Y | `YOUTUBE_PLAY`, `WEATHER_INFO`, `MEDICAL_ROUTE`, `MAP_ROUTE`, `KIOSK_HELP`, `UNKNOWN` 중 하나 |
+| `intent` | string | Y | `YOUTUBE_SEARCH`, `YOUTUBE_PLAY`, `WEATHER_INFO`, `MEDICAL_ROUTE`, `MAP_ROUTE`, `KIOSK_HELP`, `UNKNOWN` 중 하나 |
 | `step` | string | Y | 대화 진행 단계. 단발성 기능은 `DONE` |
 | `slots` | object | Y | 현재까지 수집한 누적 파라미터 |
 | `ttsText` | string | Y | 프론트가 즉시 TTS로 읽을 문장 |
@@ -91,8 +91,8 @@ API 명세서`, `네이버 지도 통합 경로 연동 API 명세서`는 하위 
 
 1. Redis에서 JWT 사용자 ID 기준 기존 세션을 조회한다.
 2. `audio`가 있으면 STT를 수행하고, `text`가 있으면 그대로 사용한다.
-3. 신규 대화면 LLM으로 intent를 분류하고, 기존 대화면 저장된 `step`과
-   `slots`를 이어서 처리한다.
+3. 매 발화를 LLM으로 분류한다. 기존 대화의 후속 답변이면 저장된 `step`과 `slots`를
+   이어서 처리하고, 다른 기능을 명확히 요청하면 기존 대화를 버리고 새 대화를 시작한다.
 4. 도메인별 `IntentHandler`가 다음 질문 또는 실행 정보를 결정한다. 필요하면
    기능별 링크 생성 로직을 내부 호출한다.
 5. 진행 중인 대화는 Redis 세션을 갱신하고, `DONE`이면 세션을 삭제한다.
@@ -114,32 +114,42 @@ API 명세서`, `네이버 지도 통합 경로 연동 API 명세서`는 하위 
 
 ## 3. 유튜브
 
-### `POST /voice/process` (`YOUTUBE_PLAY`)
+### `POST /voice/process` (`YOUTUBE_SEARCH`, `YOUTUBE_PLAY`)
 
 우리 앱에서 영상을 재생하지 않고 유튜브 앱으로 이동한다. 유튜브 앱이 없으면
 웹 URL로 대체한다. 특정 영상이 검색되면 실행 전 미리보기와 확인 버튼을 먼저
 보여준다.
 
-`검색해줘` 또는 `찾아줘`는 `slots.action: SEARCH`, `틀어줘` 또는 `재생해줘`는
-`slots.action: PLAY`로 구분한다. 공통 intent는 기존 계약대로 `YOUTUBE_PLAY`를
-유지한다.
+`검색해줘` 또는 `찾아줘`는 `YOUTUBE_SEARCH`, `틀어줘` 또는 `재생해줘`는
+`YOUTUBE_PLAY`로 분류한다. 프론트는 intent 값으로 검색 목록과 재생 확인 화면을 구분한다.
 
-### 검색 결과 열기 (`SEARCH`, `DONE`)
+### 검색 목록 (`YOUTUBE_SEARCH`, `CONFIRM`)
 
 ```json
 {
-  "intent": "YOUTUBE_PLAY",
-  "step": "DONE",
-  "slots": { "query": "아이유", "action": "SEARCH" },
-  "ttsText": "아이유 검색 결과를 보여드릴게요.",
-  "screen": "APP_LAUNCH",
+  "intent": "YOUTUBE_SEARCH",
+  "step": "CONFIRM",
+  "slots": { "query": "아이유" },
+  "ttsText": "아이유 검색 결과예요. 보고 싶은 영상을 골라 주세요.",
+  "screen": "YOUTUBE_SEARCH_RESULT",
   "quickReplies": null,
   "data": {
-    "app_url": "vnd.youtube://www.youtube.com/results?search_query=%EC%95%84%EC%9D%B4%EC%9C%A0",
-    "web_url": "https://www.youtube.com/results?search_query=%EC%95%84%EC%9D%B4%EC%9C%A0"
+    "videos": [
+      {
+        "videoId": "abcd1234",
+        "title": "아이유 - 밤편지",
+        "description": "영상 설명",
+        "channelTitle": "이지금",
+        "publishedAt": "2026-01-31T09:00:00Z",
+        "thumbnailUrl": "https://i.ytimg.com/vi/abcd1234/hqdefault.jpg"
+      }
+    ]
   }
 }
 ```
+
+검색 결과는 최대 10개를 반환한다. 사용자가 목록에서 영상을 고르면 프론트가 해당
+`videoId`로 유튜브 앱 또는 웹을 연다.
 
 검색 요청은 특정 영상을 선택하지 않고 검색 결과 화면을 바로 연다.
 

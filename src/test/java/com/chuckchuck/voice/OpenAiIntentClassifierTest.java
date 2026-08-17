@@ -37,15 +37,16 @@ class OpenAiIntentClassifierTest {
                 .andExpect(content().string(containsString("MAP_ROUTE")))
                 .andExpect(content().string(containsString("WEATHER_INFO")))
                 .andExpect(content().string(containsString("MEDICAL_ROUTE")))
+                .andExpect(content().string(containsString("YOUTUBE_SEARCH")))
                 .andRespond(withSuccess("""
                         {
                           "choices": [
-                            {"message": {"content": "{\\\"intent\\\":\\\"MAP_ROUTE\\\"}"}}
+                            {"message": {"content": "{\\\"intent\\\":\\\"YOUTUBE_SEARCH\\\"}"}}
                           ]
                         }
                         """, MediaType.APPLICATION_JSON));
 
-        assertThat(classifier.classify("아들 집 가는 길 알려줘")).isEqualTo(Intent.MAP_ROUTE);
+        assertThat(classifier.classify("아이유 검색해줘")).isEqualTo(Intent.YOUTUBE_SEARCH);
         server.verify();
     }
 

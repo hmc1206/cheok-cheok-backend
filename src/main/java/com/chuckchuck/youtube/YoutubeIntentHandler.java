@@ -3,14 +3,13 @@ package com.chuckchuck.youtube;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
-import com.chuckchuck.voice.QuickReply;
 import org.springframework.stereotype.Component;
 
 import com.chuckchuck.session.SessionState;
 import com.chuckchuck.voice.Intent;
 import com.chuckchuck.voice.IntentHandler;
+import com.chuckchuck.voice.QuickReply;
 import com.chuckchuck.voice.VoiceResponse;
 
 @Component
@@ -20,14 +19,6 @@ public class YoutubeIntentHandler implements IntentHandler {
     private static final String SCREEN = "APP_LAUNCH";
     private static final String SEARCH = "SEARCH";
     private static final String PLAY = "PLAY";
-
-    private static final Pattern SEARCH_WORDS = Pattern.compile("검색|찾아");
-    private static final Pattern PLAY_WORDS = Pattern.compile("틀어|재생|보여");
-
-    private static final Pattern COMMAND_WORDS = Pattern.compile(
-            "유튜브(?:에서)?|동영상|영상|검색\\s*결과|검색(?:해)?\\s*줘|검색|"
-                    + "찾아\\s*줘|찾아줘|찾아|틀어\\s*줘|틀어|재생해\\s*줘|재생해|재생|보여\\s*줘|보여"
-    );
 
     private final YoutubeApiClient youtubeApiClient;
     private final YoutubeLinkBuilder linkBuilder;
@@ -49,29 +40,11 @@ public class YoutubeIntentHandler implements IntentHandler {
         if (CONFIRM.equals(session.step())) {
             return confirm(slots, userText);
         }
-        return isSearchOnly(userText)
-                ? showSearchResults(slots, userText)
-                : preparePlay(slots, userText);
-    }
-
-    private VoiceResponse showSearchResults(Map<String, Object> slots, String userText) {
-        String query = extractQuery(userText);
-        slots.put("query", query);
-        slots.put("action", SEARCH);
-
-        if (query.isBlank()) {
-            return done(slots, "검색할 영상을 다시 말씀해 주세요.", null);
-        }
-
-        return done(
-                slots,
-                query + " 검색 결과를 보여드릴게요.",
-                YoutubeLinkResult.linkOnly(linkBuilder.forSearch(query))
-        );
+        return preparePlay(slots, userText);
     }
 
     private VoiceResponse preparePlay(Map<String, Object> slots, String userText) {
-        String query = extractQuery(userText);
+        String query = YoutubeQuery.extract(userText);
         slots.put("query", query);
         slots.put("action", PLAY);
 
@@ -115,11 +88,4 @@ public class YoutubeIntentHandler implements IntentHandler {
         return new VoiceResponse(Intent.YOUTUBE_PLAY, DONE, slots, ttsText, SCREEN, data);
     }
 
-    String extractQuery(String userText) {
-        return COMMAND_WORDS.matcher(userText).replaceAll(" ").replaceAll("\\s+", " ").trim();
-    }
-
-    private boolean isSearchOnly(String userText) {
-        return SEARCH_WORDS.matcher(userText).find() && !PLAY_WORDS.matcher(userText).find();
-    }
 }
