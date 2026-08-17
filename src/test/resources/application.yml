@@ -14,3 +14,11 @@ app:
     refresh-token-ttl: 14d
     frontend-callback-url: http://localhost:5173/auth/callback
     secure-cookie: false
+
+youtube:
+  api-key: test-youtube-api-key
+
+naver:
+  search:
+    client-id: test-naver-client-id
+    client-secret: test-naver-client-secret

@@ -120,13 +120,36 @@ API 명세서`, `네이버 지도 통합 경로 연동 API 명세서`는 하위 
 웹 URL로 대체한다. 특정 영상이 검색되면 실행 전 미리보기와 확인 버튼을 먼저
 보여준다.
 
+`검색해줘` 또는 `찾아줘`는 `slots.action: SEARCH`, `틀어줘` 또는 `재생해줘`는
+`slots.action: PLAY`로 구분한다. 공통 intent는 기존 계약대로 `YOUTUBE_PLAY`를
+유지한다.
+
+### 검색 결과 열기 (`SEARCH`, `DONE`)
+
+```json
+{
+  "intent": "YOUTUBE_PLAY",
+  "step": "DONE",
+  "slots": { "query": "아이유", "action": "SEARCH" },
+  "ttsText": "아이유 검색 결과를 보여드릴게요.",
+  "screen": "APP_LAUNCH",
+  "quickReplies": null,
+  "data": {
+    "app_url": "vnd.youtube://www.youtube.com/results?search_query=%EC%95%84%EC%9D%B4%EC%9C%A0",
+    "web_url": "https://www.youtube.com/results?search_query=%EC%95%84%EC%9D%B4%EC%9C%A0"
+  }
+}
+```
+
+검색 요청은 특정 영상을 선택하지 않고 검색 결과 화면을 바로 연다.
+
 ### 1단계: 실행 확인 (`CONFIRM`)
 
 ```json
 {
   "intent": "YOUTUBE_PLAY",
   "step": "CONFIRM",
-  "slots": { "query": "미스트롯" },
+  "slots": { "query": "미스트롯", "action": "PLAY" },
   "ttsText": "미스트롯 영상을 열어드릴까요?",
   "screen": "APP_LAUNCH",
   "quickReplies": [
@@ -149,7 +172,7 @@ API 명세서`, `네이버 지도 통합 경로 연동 API 명세서`는 하위 
 {
   "intent": "YOUTUBE_PLAY",
   "step": "DONE",
-  "slots": { "query": "미스트롯" },
+  "slots": { "query": "미스트롯", "action": "PLAY" },
   "ttsText": "유튜브를 열어드릴게요.",
   "screen": "APP_LAUNCH",
   "quickReplies": null,

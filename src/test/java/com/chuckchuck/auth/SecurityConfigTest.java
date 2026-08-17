@@ -37,7 +37,8 @@ class SecurityConfigTest {
     void rejectsProtectedApiWithoutToken() throws Exception {
         mockMvc.perform(get("/api/users/me"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errorCode").value("UNAUTHORIZED"));
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"))
+                .andExpect(jsonPath("$.ttsText").isString());
     }
 
     @Test

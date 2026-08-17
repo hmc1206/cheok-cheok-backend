@@ -6,13 +6,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.chuckchuck.auth.user.AppUser;
 import com.chuckchuck.auth.user.AppUserRepository;
@@ -24,18 +23,23 @@ class CustomOAuth2UserServiceTest {
         AppUserRepository repository = mock(AppUserRepository.class);
         when(repository.findByGoogleId("google-123")).thenReturn(Optional.empty());
         CustomOAuth2UserService service = new CustomOAuth2UserService(repository);
-        OAuth2User googleUser = new DefaultOAuth2User(
-                List.of(),
-                Map.of(
-                        "sub", "google-123",
-                        "email", "hong@gmail.com",
-                        "name", "홍길동",
-                        "picture", "https://example.com/profile.png"
-                ),
-                "sub"
-        );
+        OidcUser googleUser = mock(OidcUser.class);
+        when(googleUser.getAttribute("sub")).thenReturn("google-123");
+        when(googleUser.getAttribute("email")).thenReturn("hong@gmail.com");
+        when(googleUser.getAttribute("name")).thenReturn("홍길동");
+        when(googleUser.getAttribute("picture")).thenReturn("https://example.com/profile.png");
+        when(googleUser.getAttributes()).thenReturn(Map.of(
+                "sub", "google-123",
+                "email", "hong@gmail.com",
+                "name", "홍길동",
+                "picture", "https://example.com/profile.png"
+        ));
 
-        OAuthUserPrincipal principal = service.saveOrUpdate(googleUser);
+        OAuthUserPrincipal principal = ReflectionTestUtils.invokeMethod(
+                service,
+                "saveOrUpdate",
+                googleUser
+        );
 
         assertThat(principal.isNewUser()).isTrue();
         assertThat(principal.getName()).isNotBlank();
