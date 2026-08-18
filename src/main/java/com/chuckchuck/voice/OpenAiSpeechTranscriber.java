@@ -71,7 +71,7 @@ public class OpenAiSpeechTranscriber implements SpeechTranscriber {
             throw new ApiException(
                     ErrorCode.EXTERNAL_API_FAIL,
                     "OpenAI 음성 인식 요청에 실패했습니다.",
-                    "목소리를 글자로 바꾸지 못했어요. 잠시 후 다시 말씀해 주세요."
+                    "지금은 말씀을 이해하기 어려워요. 잠시 후 다시 해 주세요."
             );
         }
     }
@@ -81,7 +81,7 @@ public class OpenAiSpeechTranscriber implements SpeechTranscriber {
             throw new ApiException(
                     ErrorCode.EXTERNAL_API_FAIL,
                     "OPENAI_API_KEY가 설정되지 않았습니다.",
-                    "음성 인식 설정을 확인해 주세요."
+                    "지금은 이용할 수 없어요. 잠시 후 다시 해 주세요."
             );
         }
     }
@@ -146,7 +146,7 @@ public class OpenAiSpeechTranscriber implements SpeechTranscriber {
         return new ApiException(
                 ErrorCode.INVALID_REQUEST,
                 "audio Base64 형식 또는 파일 크기가 올바르지 않습니다.",
-                "녹음 내용을 확인한 뒤 다시 말씀해 주세요."
+                "잘 못 들었어요. 다시 한번 말씀해 주세요."
         );
     }
 

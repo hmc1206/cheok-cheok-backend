@@ -80,14 +80,14 @@ public class MapService {
             throw new ApiException(
                     ErrorCode.INVALID_REQUEST,
                     "의료시설 종류와 현재 위치를 올바르게 입력해야 합니다.",
-                    "병원이나 약국과 현재 위치를 다시 확인해 주세요."
+                    "병원과 약국 중 어디를 찾을지 다시 말씀해 주세요."
             );
         }
         if (apiKeyId.isBlank() || apiKey.isBlank()) {
             throw new ApiException(
                     ErrorCode.GEOCODE_API_FAIL,
                     "NAVER_SEARCH_CLIENT_ID와 NAVER_SEARCH_CLIENT_SECRET이 설정되지 않았습니다.",
-                    "지도 검색 설정을 확인해 주세요."
+                    "지금은 이용할 수 없어요. 잠시 후 다시 해 주세요."
             );
         }
     }
