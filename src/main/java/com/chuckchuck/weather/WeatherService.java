@@ -60,7 +60,7 @@ public class WeatherService {
             throw new ApiException(
                     ErrorCode.INVALID_REQUEST,
                     "date는 YYYY-MM-DD 형식이어야 합니다.",
-                    "날짜를 다시 확인해 주세요."
+                    "날짜를 다시 말씀해 주세요."
             );
         }
     }
@@ -122,7 +122,7 @@ public class WeatherService {
             throw new ApiException(
                     ErrorCode.INVALID_REQUEST,
                     "위도와 경도의 범위를 확인해 주세요.",
-                    "현재 위치 정보를 다시 확인해 주세요."
+                    "위치를 확인하지 못했어요. 잠시 후 다시 해 주세요."
             );
         }
     }

@@ -130,7 +130,7 @@ public class MapIntentHandler implements IntentHandler {
                         Intent.MAP_ROUTE,
                         "DONE",
                         slots,
-                        "네이버 대중교통 길찾기 링크가 생성되었습니다. 화면의 링크를 눌러 확인해 주세요.",
+                        "길을 찾았어요. 화면의 링크를 눌러 확인해 주세요.",
                         "MAP_RESULT",
                         routeResult
                 );
@@ -143,7 +143,7 @@ public class MapIntentHandler implements IntentHandler {
                 Intent.MAP_ROUTE,
                 "DONE",
                 slots,
-                "네이버 길찾기 링크를 생성하는 데 실패했어요. 잠시 후 다시 시도해 주세요.",
+                "길을 찾지 못했어요. 잠시 후 다시 해 주세요.",
                 "MAP_NOT_FOUND",
                 null
         );

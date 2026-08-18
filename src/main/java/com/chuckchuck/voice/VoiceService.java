@@ -69,14 +69,14 @@ public class VoiceService {
             throw new ApiException(
                     ErrorCode.INVALID_REQUEST,
                     "userId는 반드시 입력해야 합니다.",
-                    "로그인 정보를 확인한 뒤 다시 말씀해 주세요."
+                    "로그인이 필요해요. 로그인한 뒤 다시 말씀해 주세요."
             );
         }
         if (!request.hasText() && !request.hasAudio()) {
             throw new ApiException(
                     ErrorCode.INVALID_REQUEST,
                     "text와 audio 중 하나는 반드시 입력해야 합니다.",
-                    "말씀하실 내용을 다시 입력해 주세요."
+                    "잘 못 들었어요. 다시 한번 말씀해 주세요."
             );
         }
         if ((request.latitude() == null) != (request.longitude() == null)
@@ -85,7 +85,7 @@ public class VoiceService {
             throw new ApiException(
                     ErrorCode.INVALID_REQUEST,
                     "위도와 경도를 올바른 범위로 함께 입력해야 합니다.",
-                    "현재 위치 정보를 다시 확인해 주세요."
+                    "위치를 확인하지 못했어요. 잠시 후 다시 해 주세요."
             );
         }
     }

@@ -56,7 +56,7 @@ public class OpenAiIntentClassifier implements IntentClassifier {
             throw new ApiException(
                     ErrorCode.EXTERNAL_API_FAIL,
                     "OPENAI_API_KEY가 설정되지 않았습니다.",
-                    "의도 분석 설정을 확인해 주세요."
+                    "지금은 이용할 수 없어요. 잠시 후 다시 해 주세요."
             );
         }
 
@@ -141,7 +141,7 @@ public class OpenAiIntentClassifier implements IntentClassifier {
         return new ApiException(
                 ErrorCode.EXTERNAL_API_FAIL,
                 "OpenAI가 올바른 의도 분석 결과를 반환하지 않았습니다.",
-                "지금은 말씀을 이해하기 어려워요. 다시 한번 말씀해 주세요."
+                "지금은 말씀을 이해하기 어려워요. 잠시 후 다시 해 주세요."
         );
     }
 
