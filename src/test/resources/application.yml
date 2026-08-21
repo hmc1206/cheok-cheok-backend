@@ -1,0 +1,24 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-google-client-id
+            client-secret: test-google-client-secret
+
+app:
+  auth:
+    jwt-secret: test-jwt-secret-that-is-longer-than-thirty-two-bytes
+    access-token-ttl: 30m
+    refresh-token-ttl: 14d
+    frontend-callback-url: http://localhost:5173/auth/callback
+    secure-cookie: false
+
+youtube:
+  api-key: test-youtube-api-key
+
+naver:
+  search:
+    client-id: test-naver-client-id
+    client-secret: test-naver-client-secret
